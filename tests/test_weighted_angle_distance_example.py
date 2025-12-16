@@ -48,14 +48,18 @@ def test_angle_distance_branches():
     assert wad._angle_distance_from_counts(Counter(), Counter()) == 0.0
 
     # one zero
-    assert wad._angle_distance_from_counts(Counter(), Counter({"a": 1})) == pytest.approx(math.pi / 2)
+    assert wad._angle_distance_from_counts(
+        Counter(), Counter({"a": 1})
+    ) == pytest.approx(math.pi / 2)
 
     # identical nonzero -> 0
     c = Counter({"a": 2, "b": 1})
     assert wad._angle_distance_from_counts(c, c) == pytest.approx(0.0)
 
     # disjoint support -> pi/2
-    assert wad._angle_distance_from_counts(Counter({"a": 1}), Counter({"b": 1})) == pytest.approx(math.pi / 2)
+    assert wad._angle_distance_from_counts(
+        Counter({"a": 1}), Counter({"b": 1})
+    ) == pytest.approx(math.pi / 2)
 
 
 def test_naive_weighted_angle_distance_edges():
@@ -67,7 +71,9 @@ def test_naive_weighted_angle_distance_edges():
     rho = 0.3
     # s empty => each theta_n = pi/2 for n<=|t|
     expected = (math.pi / 2) * sum(rho**k for k in range(1, len("abcd") + 1))
-    assert wad.naive_weighted_angle_distance("", "abcd", rho=rho) == pytest.approx(expected)
+    assert wad.naive_weighted_angle_distance("", "abcd", rho=rho) == pytest.approx(
+        expected
+    )
 
 
 def test_kgram_cosine_angle_distance_basic():
@@ -75,10 +81,14 @@ def test_kgram_cosine_angle_distance_basic():
     assert wad.kgram_cosine_angle_distance("ab", "xyz", k=10) == 0.0
 
     # one empty (k>len(s)) and other non-empty (k<=len(t)) => pi/2
-    assert wad.kgram_cosine_angle_distance("a", "abcd", k=2) == pytest.approx(math.pi / 2)
+    assert wad.kgram_cosine_angle_distance("a", "abcd", k=2) == pytest.approx(
+        math.pi / 2
+    )
 
     # identical strings => 0 for any valid k
-    assert wad.kgram_cosine_angle_distance("banana", "banana", k=2) == pytest.approx(0.0)
+    assert wad.kgram_cosine_angle_distance("banana", "banana", k=2) == pytest.approx(
+        0.0
+    )
 
 
 def test_suffix_array_doubling_correctness_and_empty():
@@ -156,14 +166,18 @@ def test_weighted_angle_distance_fast_equals_naive_on_examples():
         ("banana", "bananas", 0.4, None),
         ("ababa", "baba", 0.8, 3),
     ]:
-        fast = wad.weighted_angle_distance(s, t, rho=rho, max_n=max_n, use_suffix_array=True)
+        fast = wad.weighted_angle_distance(
+            s, t, rho=rho, max_n=max_n, use_suffix_array=True
+        )
         naive = wad.naive_weighted_angle_distance(s, t, rho=rho, max_n=max_n)
         assert fast == pytest.approx(naive, rel=1e-10, abs=1e-10)
 
 
 def test_weighted_angle_distance_fallback_path_equals_naive():
     s, t = "ababa", "baba"
-    fast_off = wad.weighted_angle_distance(s, t, rho=0.6, max_n=3, use_suffix_array=False)
+    fast_off = wad.weighted_angle_distance(
+        s, t, rho=0.6, max_n=3, use_suffix_array=False
+    )
     naive = wad.naive_weighted_angle_distance(s, t, rho=0.6, max_n=3)
     assert fast_off == pytest.approx(naive, rel=1e-12, abs=1e-12)
 
@@ -185,6 +199,8 @@ def test_weighted_angle_distance_hits_all_theta_branches_via_monkeypatch(monkeyp
 
     monkeypatch.setattr(wad, "_gst_aggregated_stats", fake_stats)
 
-    out = wad.weighted_angle_distance("x", "y", rho=0.5, max_n=None, use_suffix_array=True)
+    out = wad.weighted_angle_distance(
+        "x", "y", rho=0.5, max_n=None, use_suffix_array=True
+    )
     # expected = rho^1*0 + rho^2*(pi/2) + rho^3*0
     assert out == pytest.approx((0.5**2) * (math.pi / 2))

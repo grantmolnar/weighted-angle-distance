@@ -47,7 +47,9 @@ def test_invariants_and_scores_match_sklearn(data: tuple[list[int], list[str]]) 
         )
     )
 )
-def test_permutation_invariance(data: tuple[list[int], list[str], tuple[int, ...]]) -> None:
+def test_permutation_invariance(
+    data: tuple[list[int], list[str], tuple[int, ...]]
+) -> None:
     pred, true, perm = data
 
     out1 = evaluate_against_labels(pred, true)

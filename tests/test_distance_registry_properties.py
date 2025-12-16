@@ -48,7 +48,9 @@ def test_levenshtein_triangle_inequality(a: str, b: str, c: str) -> None:
 
 @settings(max_examples=80)
 @given(st.text(min_size=0, max_size=20), st.text(min_size=0, max_size=20))
-def test_registry_distances_are_finite_nonnegative_symmetric_without_optionals(a: str, b: str) -> None:
+def test_registry_distances_are_finite_nonnegative_symmetric_without_optionals(
+    a: str, b: str
+) -> None:
     reg = dr.get_distance_registry(
         rho_values=(0.5, 1.618),
         k_values=(2, 3),
@@ -65,7 +67,9 @@ def test_registry_distances_are_finite_nonnegative_symmetric_without_optionals(a
         assert d1 == pytest.approx(d2)
 
 
-def test_registry_with_include_optional_true_is_safe_when_rapidfuzz_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_registry_with_include_optional_true_is_safe_when_rapidfuzz_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # This should not explode; it should simply skip optionals.
     _force_rapidfuzz_unavailable(monkeypatch)
     reg = dr.get_distance_registry(include_optional=True)

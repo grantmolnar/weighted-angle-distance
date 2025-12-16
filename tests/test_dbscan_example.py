@@ -18,7 +18,9 @@ from src.clustering.dbscan import (
 )
 
 
-def _two_cluster_D(n_per_cluster: int = 3, within: float = 0.1, between: float = 10.0) -> np.ndarray:
+def _two_cluster_D(
+    n_per_cluster: int = 3, within: float = 0.1, between: float = 10.0
+) -> np.ndarray:
     """
     Build a clean 2-cluster distance matrix:
       - within-cluster distances = within
@@ -172,7 +174,9 @@ def test_tune_dbscan_silhouette_random_search_is_deterministic_given_seed() -> N
     assert res1.silhouette == pytest.approx(safe_silhouette_precomputed(D, res1.labels))
 
 
-def test_tune_dbscan_silhouette_optuna_success_path_via_fake_module(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_tune_dbscan_silhouette_optuna_success_path_via_fake_module(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     D = _two_cluster_D(n_per_cluster=3, within=0.1, between=10.0)
 
     # --- fake optuna module ---
@@ -232,7 +236,9 @@ def test_tune_dbscan_silhouette_optuna_success_path_via_fake_module(monkeypatch:
     assert (res.labels == -1).sum() == 0
 
 
-def test_tune_dbscan_silhouette_optuna_failure_falls_back(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_tune_dbscan_silhouette_optuna_failure_falls_back(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     D = _two_cluster_D(n_per_cluster=3, within=0.1, between=10.0)
 
     fake_optuna = ModuleType("optuna")

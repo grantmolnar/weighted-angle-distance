@@ -75,7 +75,9 @@ def _upper_triangle(D: np.ndarray) -> np.ndarray:
     return D[iu]
 
 
-def _eps_bounds_from_quantiles(D: np.ndarray, q_low: float, q_high: float) -> tuple[float, float]:
+def _eps_bounds_from_quantiles(
+    D: np.ndarray, q_low: float, q_high: float
+) -> tuple[float, float]:
     """
     Choose eps bounds based on quantiles of pairwise distances.
 
@@ -103,7 +105,6 @@ def _eps_bounds_from_quantiles(D: np.ndarray, q_low: float, q_high: float) -> tu
         eps_high = eps_low + max(1e-12, 1e-6 * eps_low)
 
     return eps_low, eps_high
-
 
 
 @dataclass(frozen=True)
@@ -137,7 +138,9 @@ def tune_dbscan_silhouette(
     DbscanResult
         Best labels + silhouette + (eps, min_samples).
     """
-    eps_low, eps_high = _eps_bounds_from_quantiles(D, eps_quantiles[0], eps_quantiles[1])
+    eps_low, eps_high = _eps_bounds_from_quantiles(
+        D, eps_quantiles[0], eps_quantiles[1]
+    )
 
     # Trivial / tiny case
     if D.shape[0] < 2:

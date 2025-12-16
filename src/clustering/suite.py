@@ -26,6 +26,7 @@ from src.string_distances.distance_registry import DistanceFn
 # Interfaces for the suite
 # ----------------------------
 
+
 @dataclass(frozen=True)
 class DataImporter:
     """
@@ -33,6 +34,7 @@ class DataImporter:
       - label: ground-truth class label (string)
       - sequence: the raw string to compare (string)
     """
+
     name: str
     load: Callable[[], pl.DataFrame]
 
@@ -40,6 +42,7 @@ class DataImporter:
 @dataclass(frozen=True)
 class DistanceSpec:
     """A named distance function (str, str) -> float."""
+
     name: str
     fn: DistanceFn
 
@@ -50,6 +53,7 @@ class DbscanConfig:
     DBSCAN configuration. If tune=True, we choose eps/min_samples
     using silhouette score only (no true labels).
     """
+
     tune: bool = True
     eps: float = 5.0
     min_samples: int = 5
@@ -138,10 +142,16 @@ def run_dbscan_suite(
                     D, true_labels, labels, out_path / f"{tag}__heatmap.png"
                 )
                 mds_true_path = maybe_plot_mds(
-                    D, true_labels, out_path / f"{tag}__mds_true.png", title=f"{tag} (true labels)"
+                    D,
+                    true_labels,
+                    out_path / f"{tag}__mds_true.png",
+                    title=f"{tag} (true labels)",
                 )
                 mds_pred_path = maybe_plot_mds(
-                    D, labels.tolist(), out_path / f"{tag}__mds_pred.png", title=f"{tag} (DBSCAN labels)"
+                    D,
+                    labels.tolist(),
+                    out_path / f"{tag}__mds_pred.png",
+                    title=f"{tag} (DBSCAN labels)",
                 )
 
             rows.append(

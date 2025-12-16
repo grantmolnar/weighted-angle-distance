@@ -6,7 +6,7 @@ dependencies:
   - numpy>=1.26,<1.27
   - scipy>=1.13,<1.14
   - pandas>=2.2,<2.3
-  - polars
+  - polars>=1.0,<1.1
   - scikit-learn>=1.5,<1.6
   - textdistance>=4.6,<4.7
   - optuna>=3.6,<3.7
@@ -14,11 +14,10 @@ dependencies:
   - pytest>=8.3,<8.4
   - pytest-cov>=5.0,<5.1
   - hypothesis>=6.112,<6.113
-  - pip
-  - tqdm
-  - rapidfuzz
+  - tqdm>=4.66,<4.67
+  - rapidfuzz>=3.9,<3.10
+  - pip>=24.2,<24.3
   - pip:
       - mypy>=1.13,<1.14
       - black>=24.8,<24.9
       - isort>=5.13,<5.14
-

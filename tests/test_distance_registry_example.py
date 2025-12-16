@@ -66,24 +66,32 @@ def test__levenshtein_fallback_basic_examples() -> None:
     assert dr._levenshtein_fallback("abc", "abc") == 0
 
 
-def test_levenshtein_distance_uses_fallback_when_rapidfuzz_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_levenshtein_distance_uses_fallback_when_rapidfuzz_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _force_rapidfuzz_unavailable(monkeypatch)
     assert dr.levenshtein_distance("kitten", "sitting") == 3.0
 
 
-def test_levenshtein_distance_uses_rapidfuzz_when_available(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_levenshtein_distance_uses_rapidfuzz_when_available(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _install_fake_rapidfuzz(monkeypatch, lev_value=999.0)
     assert dr.levenshtein_distance("anything", "else") == 999.0
 
 
-def test_jaro_winkler_distance_raises_importerror_when_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_jaro_winkler_distance_raises_importerror_when_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _force_rapidfuzz_unavailable(monkeypatch)
     with pytest.raises(ImportError) as e:
         dr.jaro_winkler_distance("a", "a")
     assert "rapidfuzz" in str(e.value).lower()
 
 
-def test_jaro_winkler_distance_works_when_available(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_jaro_winkler_distance_works_when_available(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _install_fake_rapidfuzz(monkeypatch, jw_value=0.77)
     assert dr.jaro_winkler_distance("a", "b") == 0.77
 
@@ -99,9 +107,13 @@ def test_lcs_works_when_available(monkeypatch: pytest.MonkeyPatch) -> None:
     assert dr.longest_common_subsequence_length("abc", "zzz") == 11.0
 
 
-def test_get_distance_registry_core_keys_present_and_callable(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_get_distance_registry_core_keys_present_and_callable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # keep optionals off for determinism
-    reg = dr.get_distance_registry(rho_values=(0.5,), k_values=(2, 3), include_optional=False)
+    reg = dr.get_distance_registry(
+        rho_values=(0.5,), k_values=(2, 3), include_optional=False
+    )
 
     assert "levenshtein" in reg
     assert "kgram_angle_k=2" in reg
@@ -115,7 +127,9 @@ def test_get_distance_registry_core_keys_present_and_callable(monkeypatch: pytes
 
 
 def test_get_distance_registry_kgram_binds_k_correctly() -> None:
-    reg = dr.get_distance_registry(rho_values=(0.5,), k_values=(2, 4), include_optional=False)
+    reg = dr.get_distance_registry(
+        rho_values=(0.5,), k_values=(2, 4), include_optional=False
+    )
     s, t = "GATTACA", "GACTATA"
 
     for k in (2, 4):
@@ -127,7 +141,9 @@ def test_get_distance_registry_kgram_binds_k_correctly() -> None:
 
 
 def test_get_distance_registry_weighted_angle_binds_rho_correctly() -> None:
-    reg = dr.get_distance_registry(rho_values=(0.5, 1.618), k_values=(), include_optional=False)
+    reg = dr.get_distance_registry(
+        rho_values=(0.5, 1.618), k_values=(), include_optional=False
+    )
     s, t = "GATTACA", "GACTATA"
 
     for rho in (0.5, 1.618):
@@ -138,9 +154,13 @@ def test_get_distance_registry_weighted_angle_binds_rho_correctly() -> None:
         assert got == pytest.approx(exp)
 
 
-def test_get_distance_registry_includes_optional_when_available(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_get_distance_registry_includes_optional_when_available(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _install_fake_rapidfuzz(monkeypatch, jw_value=0.12, lcs_value=3.0)
-    reg = dr.get_distance_registry(rho_values=(0.5,), k_values=(2,), include_optional=True)
+    reg = dr.get_distance_registry(
+        rho_values=(0.5,), k_values=(2,), include_optional=True
+    )
 
     assert "jaro_winkler" in reg
     assert reg["jaro_winkler"]("a", "b") == 0.12
@@ -150,9 +170,13 @@ def test_get_distance_registry_includes_optional_when_available(monkeypatch: pyt
     assert reg["lcs"]("abc", "xyz") == 3.0
 
 
-def test_get_distance_registry_skips_optional_when_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_get_distance_registry_skips_optional_when_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _force_rapidfuzz_unavailable(monkeypatch)
-    reg = dr.get_distance_registry(rho_values=(0.5,), k_values=(2,), include_optional=True)
+    reg = dr.get_distance_registry(
+        rho_values=(0.5,), k_values=(2,), include_optional=True
+    )
 
     assert "jaro_winkler" not in reg
     # Intended behavior: also skip lcs if RapidFuzz missing

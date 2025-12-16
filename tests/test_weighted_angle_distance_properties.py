@@ -13,11 +13,15 @@ ALPHABET = "abcd"  # avoid '#' and '$' sentinels
 @given(
     s=st.text(ALPHABET, min_size=0, max_size=8),
     t=st.text(ALPHABET, min_size=0, max_size=8),
-    rho=st.floats(min_value=0.05, max_value=0.95, allow_nan=False, allow_infinity=False),
+    rho=st.floats(
+        min_value=0.05, max_value=0.95, allow_nan=False, allow_infinity=False
+    ),
     max_n=st.one_of(st.none(), st.integers(min_value=0, max_value=8)),
 )
 def test_fast_matches_naive_property(s, t, rho, max_n):
-    fast = wad.weighted_angle_distance(s, t, rho=rho, max_n=max_n, use_suffix_array=True)
+    fast = wad.weighted_angle_distance(
+        s, t, rho=rho, max_n=max_n, use_suffix_array=True
+    )
     naive = wad.naive_weighted_angle_distance(s, t, rho=rho, max_n=max_n)
     assert fast == pytest.approx(naive, rel=1e-10, abs=1e-10)
 
@@ -26,7 +30,9 @@ def test_fast_matches_naive_property(s, t, rho, max_n):
 @given(
     s=st.text(ALPHABET, min_size=0, max_size=10),
     t=st.text(ALPHABET, min_size=0, max_size=10),
-    rho=st.floats(min_value=0.05, max_value=0.95, allow_nan=False, allow_infinity=False),
+    rho=st.floats(
+        min_value=0.05, max_value=0.95, allow_nan=False, allow_infinity=False
+    ),
 )
 def test_symmetry(s, t, rho):
     d1 = wad.weighted_angle_distance(s, t, rho=rho, use_suffix_array=True)
@@ -37,7 +43,9 @@ def test_symmetry(s, t, rho):
 @settings(max_examples=200, deadline=None)
 @given(
     s=st.text(ALPHABET, min_size=0, max_size=10),
-    rho=st.floats(min_value=0.05, max_value=0.95, allow_nan=False, allow_infinity=False),
+    rho=st.floats(
+        min_value=0.05, max_value=0.95, allow_nan=False, allow_infinity=False
+    ),
     max_n=st.one_of(st.none(), st.integers(min_value=0, max_value=10)),
 )
 def test_identity_and_nonnegativity(s, rho, max_n):
@@ -50,7 +58,9 @@ def test_identity_and_nonnegativity(s, rho, max_n):
 @given(
     s=st.text(ALPHABET, min_size=0, max_size=10),
     t=st.text(ALPHABET, min_size=0, max_size=10),
-    rho=st.floats(min_value=0.05, max_value=0.95, allow_nan=False, allow_infinity=False),
+    rho=st.floats(
+        min_value=0.05, max_value=0.95, allow_nan=False, allow_infinity=False
+    ),
     max_n=st.one_of(st.none(), st.integers(min_value=0, max_value=10)),
 )
 def test_upper_bound_by_pi_over_2(s, t, rho, max_n):
@@ -65,7 +75,9 @@ def test_upper_bound_by_pi_over_2(s, t, rho, max_n):
 @given(
     s=st.text(ALPHABET, min_size=0, max_size=10),
     t=st.text(ALPHABET, min_size=0, max_size=10),
-    rho=st.floats(min_value=0.05, max_value=0.95, allow_nan=False, allow_infinity=False),
+    rho=st.floats(
+        min_value=0.05, max_value=0.95, allow_nan=False, allow_infinity=False
+    ),
     k1=st.integers(min_value=0, max_value=10),
     k2=st.integers(min_value=0, max_value=10),
 )

@@ -3,6 +3,7 @@ import math
 from typing import Callable, Dict, Optional, Sequence
 from dataclasses import dataclass
 
+
 # ---------------------------------------------------------------------
 # Helpers: n-gram counting + cosine-angle distance on count vectors
 # ---------------------------------------------------------------------
@@ -106,6 +107,7 @@ def kgram_cosine_angle_distance(s: str, t: str, *, k: int) -> float:
     """
     return _angle_distance_from_counts(_ngram_counts(s, k), _ngram_counts(t, k))
 
+
 # ---------------------------------------------------------------------
 # Fast path: suffix array + LCP interval processing
 # ---------------------------------------------------------------------
@@ -169,7 +171,7 @@ def _lcp_kasai(u: str, sa: Sequence[int]) -> list[int]:
 @dataclass(frozen=True)
 class _LCPInterval:
     lcp: int
-    left_suffix: int   # inclusive SA index
+    left_suffix: int  # inclusive SA index
     right_suffix: int  # inclusive SA index
     parent_lcp: int
 
@@ -191,7 +193,11 @@ def _enumerate_lcp_intervals(lcp: Sequence[int]) -> list[_LCPInterval]:
             h, lft = stack.pop()
             parent_h = max(cur, stack[-1][0] if stack else 0)
             # interval spans LCP indices [lft, i-1], hence SA indices [lft, i]
-            out.append(_LCPInterval(lcp=h, left_suffix=lft, right_suffix=i, parent_lcp=parent_h))
+            out.append(
+                _LCPInterval(
+                    lcp=h, left_suffix=lft, right_suffix=i, parent_lcp=parent_h
+                )
+            )
             left = lft
         if not stack or stack[-1][0] < cur:
             stack.append((cur, left))
@@ -202,7 +208,11 @@ def _enumerate_lcp_intervals(lcp: Sequence[int]) -> list[_LCPInterval]:
         h, lft = stack.pop()
         parent_h = stack[-1][0] if stack else 0
         # interval spans SA indices [lft, len(lcp)]
-        out.append(_LCPInterval(lcp=h, left_suffix=lft, right_suffix=len(lcp), parent_lcp=parent_h))
+        out.append(
+            _LCPInterval(
+                lcp=h, left_suffix=lft, right_suffix=len(lcp), parent_lcp=parent_h
+            )
+        )
 
     return out
 

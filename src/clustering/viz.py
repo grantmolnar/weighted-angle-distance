@@ -8,6 +8,7 @@ import numpy as np
 
 # Ensure scripts can save figures on headless machines
 import matplotlib
+
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt

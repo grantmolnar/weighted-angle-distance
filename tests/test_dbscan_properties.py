@@ -65,14 +65,18 @@ def test_upper_triangle_length_and_values(n: int) -> None:
         lambda n: st.tuples(
             st.just(n),
             st.lists(
-                st.floats(min_value=0.0, max_value=10.0, allow_nan=False, allow_infinity=False),
+                st.floats(
+                    min_value=0.0, max_value=10.0, allow_nan=False, allow_infinity=False
+                ),
                 min_size=n * (n - 1) // 2,
                 max_size=n * (n - 1) // 2,
             ),
         )
     )
 )
-def test_eps_bounds_from_quantiles_returns_positive_ordered_bounds(data: tuple[int, list[float]]) -> None:
+def test_eps_bounds_from_quantiles_returns_positive_ordered_bounds(
+    data: tuple[int, list[float]]
+) -> None:
     n, upper_vals = data
     D = _make_symmetric_from_upper(n, upper_vals)
 
@@ -91,7 +95,9 @@ def test_eps_bounds_from_quantiles_returns_positive_ordered_bounds(data: tuple[i
         lambda n: st.tuples(
             st.just(n),
             st.lists(
-                st.floats(min_value=0.0, max_value=5.0, allow_nan=False, allow_infinity=False),
+                st.floats(
+                    min_value=0.0, max_value=5.0, allow_nan=False, allow_infinity=False
+                ),
                 min_size=n * (n - 1) // 2,
                 max_size=n * (n - 1) // 2,
             ),
@@ -99,7 +105,9 @@ def test_eps_bounds_from_quantiles_returns_positive_ordered_bounds(data: tuple[i
         )
     )
 )
-def test_safe_silhouette_precomputed_is_in_range(data: tuple[int, list[float], int]) -> None:
+def test_safe_silhouette_precomputed_is_in_range(
+    data: tuple[int, list[float], int]
+) -> None:
     n, upper_vals, split = data
     D = _make_symmetric_from_upper(n, upper_vals)
 
@@ -116,7 +124,9 @@ def test_safe_silhouette_precomputed_is_in_range(data: tuple[int, list[float], i
         lambda n: st.tuples(
             st.just(n),
             st.lists(
-                st.floats(min_value=0.0, max_value=10.0, allow_nan=False, allow_infinity=False),
+                st.floats(
+                    min_value=0.0, max_value=10.0, allow_nan=False, allow_infinity=False
+                ),
                 min_size=n * (n - 1) // 2,
                 max_size=n * (n - 1) // 2,
             ),
@@ -124,7 +134,9 @@ def test_safe_silhouette_precomputed_is_in_range(data: tuple[int, list[float], i
         )
     )
 )
-def test_tune_dbscan_silhouette_random_search_basic_invariants(data: tuple[int, list[float], int]) -> None:
+def test_tune_dbscan_silhouette_random_search_basic_invariants(
+    data: tuple[int, list[float], int]
+) -> None:
     n, upper_vals, seed = data
     D = _make_symmetric_from_upper(n, upper_vals)
 
