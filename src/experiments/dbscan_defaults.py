@@ -40,8 +40,8 @@ DATA_IMPORTERS: list[DataImporter] = [
 
 # Build the full registry once, then pick a subset by name.
 _REG = get_distance_registry(
-    rho_values=(0.5,(1+5**0.5)/2),
-    k_values=(2, 3, 4),
+    rho_values=(0.1*i for i in range(1,10)),
+    k_values=(k for k in range(2, 50)),
     max_n_for_weighted=60,
     include_optional=True,
 )
@@ -50,7 +50,8 @@ DISTANCE_KEYS: list[str] = [
     # Pick the ones you actually want to compare:
     "levenshtein",
     "jaro_winkler",
-    "weighted_angle_rho=0.5",  # adjust to match your registry key exactly
-]
+    "lcs",
+] + [f"weighted_angle_rho={i*0.1}" for i in range(1,10)] + [f"kgram_angle_k={k}" for k in range(2,7)]
+
 
 DISTANCES: list[DistanceSpec] = [DistanceSpec(name=k, fn=_REG[k]) for k in DISTANCE_KEYS]

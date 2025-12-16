@@ -13,6 +13,5 @@ conda activate string-metric-experiments
 # Install package in editable mode
 pip install -e .
 
-python -m scripts.load_splice "src/data/molecular+biology+splice+junction+gene+sequences/splice.data" --out splice.parquet
-python -m scripts.run_dbscan "src/data/molecular+biology+splice+junction+gene+sequences/splice.data" \
-  --metric "weighted_angle_rho=0.5" --max-n 60 --n 400 --tune --trials 40
+python -m scripts.run_dbscan --max-rows 400
+pytest --cov=src/clustering/dbscan.py --cov-report=term-missing

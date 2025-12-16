@@ -98,7 +98,12 @@ def _eps_bounds_from_quantiles(D: np.ndarray, q_low: float, q_high: float) -> tu
     if eps_low <= 0:
         eps_low = max(eps_low, 1e-12)
 
+    # Ensure the interval is valid after bumping eps_low
+    if eps_high < eps_low:
+        eps_high = eps_low + max(1e-12, 1e-6 * eps_low)
+
     return eps_low, eps_high
+
 
 
 @dataclass(frozen=True)
