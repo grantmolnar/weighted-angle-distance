@@ -12,7 +12,6 @@ dependencies:
 
   # ML
   - scikit-learn>=1.5,<1.6
-  - scikit-learn-stubs>=0.1.0,<0.2.0
 
   # string distances
   - textdistance>=4.6,<4.7
@@ -31,6 +30,7 @@ dependencies:
   - pip>=24.2,<24.3
 
   - pip:
-      - mypy>=1.13,<1.14
+      - mypy>=1.16,<1.17
       - black>=24.8,<24.9
       - isort>=5.13,<5.14
+      - scikit-learn-stubs==0.0.3

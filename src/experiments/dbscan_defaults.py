@@ -10,6 +10,12 @@ from src.data.splice_loader import load_splice_to_polars
 from src.string_distances.distance_registry import get_distance_registry
 
 
+from src.data.synthetic_tandem_repeat import (
+    TandemRepeatConfig,
+    generate_tandem_repeat_df,
+)
+
+
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
@@ -27,8 +33,24 @@ def load_splice() -> pl.DataFrame:
     return load_splice_to_polars(SPLICE_PATH)
 
 
+def load_tandem_repeat_synth() -> pl.DataFrame:
+    cfg = TandemRepeatConfig(
+        seed=20251215,
+        n_motifs=20,
+        motif_len_min=3,
+        motif_len_max=12,
+        l_max=12,
+        flank_len=10,
+        replicates_per_repeat=3,
+        eta=0.01,
+        max_total_len=60,
+    )
+    return generate_tandem_repeat_df(cfg)
+
+
 DATA_IMPORTERS: list[DataImporter] = [
-    DataImporter(name="splice", load=load_splice),
+    # DataImporter(name="splice", load=load_splice),
+    DataImporter(name="tandem_repeat_synth", load=load_tandem_repeat_synth),
 ]
 
 

@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "string-metric-experiments"
+name = "weighted-angle-distance"
 version = "0.1.0"
 description = "Experiments comparing weighted angle distance on strings to standard text distances for clustering."
 requires-python = ">=3.10"
@@ -23,6 +23,19 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+  "tests/*",
+  "**/__init__.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.mypy]
+exclude_gitignore = true
 
 [tool.mutmut]
 paths_to_mutate = ["src/"]
