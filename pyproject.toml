@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "string-metric-experiments"
+version = "0.1.0"
+description = "Experiments comparing weighted angle distance on strings to standard text distances for clustering."
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "matplotlib",
+    "textdistance",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "hypothesis",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

@@ -1,0 +1,38 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual envs / conda env exports
+.env/
+.venv/
+.env*/ 
+.conda/
+*.conda-env.yml
+
+# Build / dist
+build/
+dist/
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Editor cruft
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Test / coverage
+htmlcov/
+.coverage
+coverage.xml
+
+# Data / outputs
+dbscan_string_experiments.csv
+
+.hypothesis
+sandbox*
+splice.parquet
+outputs/
