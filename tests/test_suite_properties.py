@@ -1,7 +1,6 @@
-# tests/test_suite_properties.py
 from __future__ import annotations
 
-from typing import Callable
+from typing import Optional
 
 from hypothesis import given, settings, strategies as st
 import polars as pl
@@ -15,27 +14,13 @@ from src.clustering.suite import (
 
 
 def _len_distance(a: str, b: str) -> float:
-    """Simple, deterministic nonnegative distance."""
     return float(abs(len(a) - len(b)))
 
 
 def _first_char_distance(a: str, b: str) -> float:
-    """Another cheap distance to exercise multiple DistanceSpec entries."""
     if not a or not b:
         return float(a != b)
     return 0.0 if a[0] == b[0] else 1.0
-
-
-def _make_loader(df: pl.DataFrame) -> Callable[[], pl.DataFrame]:
-    """
-    Typed loader factory (mypy-friendly).
-    Returning a clone avoids any accidental aliasing surprises.
-    """
-
-    def _load() -> pl.DataFrame:
-        return df.clone()
-
-    return _load
 
 
 LABELS = st.sampled_from(["EI", "IE", "N"])
@@ -50,7 +35,7 @@ DNA = st.text(alphabet="ACGT", min_size=1, max_size=20)
 )
 def test_run_dbscan_suite_row_count_and_schema_invariants(
     rows: list[tuple[str, str]],
-    max_rows: int | None,
+    max_rows: Optional[int],
     seed: int,
 ) -> None:
     df = pl.DataFrame(
@@ -60,9 +45,15 @@ def test_run_dbscan_suite_row_count_and_schema_invariants(
         }
     )
 
+    def load_a() -> pl.DataFrame:
+        return df
+
+    def load_b() -> pl.DataFrame:
+        return df
+
     importers = [
-        DataImporter(name="toy_a", load=_make_loader(df)),
-        DataImporter(name="toy_b", load=_make_loader(df)),
+        DataImporter(name="toy_a", load=load_a),
+        DataImporter(name="toy_b", load=load_b),
     ]
 
     distances = [
@@ -78,8 +69,8 @@ def test_run_dbscan_suite_row_count_and_schema_invariants(
         dbscan=cfg,
         max_rows=max_rows,
         seed=seed,
-        out_dir=None,
-        make_plots=False,
+        out_dir=None,  # avoid writes
+        make_plots=False,  # avoid viz calls
     )
 
     assert result.height == len(importers) * len(distances)
