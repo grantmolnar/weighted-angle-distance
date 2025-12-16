@@ -130,7 +130,8 @@ def run_dbscan_suite(
                 labels = run_dbscan_precomputed(D, eps=eps, min_samples=min_samples)
                 sil = float(safe_silhouette_precomputed(D, labels))
 
-            ext = evaluate_against_labels(labels, true_labels)
+            labels_list = labels.tolist()
+            ext = evaluate_against_labels(labels_list, true_labels)
 
             # Save plots if appropriate.
             heatmap_path = None
@@ -139,7 +140,7 @@ def run_dbscan_suite(
             if make_plots and out_path is not None and len(sequences) <= plot_max_n:
                 tag = f"{importer.name}__{dist.name}".replace("/", "_")
                 heatmap_path = maybe_plot_distance_heatmap(
-                    D, true_labels, labels, out_path / f"{tag}__heatmap.png"
+                    D, true_labels, labels_list, out_path / f"{tag}__heatmap.png"
                 )
                 mds_true_path = maybe_plot_mds(
                     D,
@@ -149,7 +150,7 @@ def run_dbscan_suite(
                 )
                 mds_pred_path = maybe_plot_mds(
                     D,
-                    labels.tolist(),
+                    labels_list,
                     out_path / f"{tag}__mds_pred.png",
                     title=f"{tag} (DBSCAN labels)",
                 )

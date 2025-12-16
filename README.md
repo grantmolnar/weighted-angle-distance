@@ -14,4 +14,8 @@ conda activate string-metric-experiments
 pip install -e .
 
 python -m scripts.run_dbscan --max-rows 400
-pytest --cov=src/clustering/dbscan.py --cov-report=term-missing
+
+# Checking code coverage:
+pytest --cov
+black .
+mypy . --check-untyped-defs

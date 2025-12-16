@@ -100,23 +100,29 @@ def get_distance_registry(
 
     include_optional:
         If True, attempts to add distances that require optional deps
-        (currently Jaro-Winkler via RapidFuzz).
+        (currently Jaro-Winkler via RapidFuzz, and LCS if applicable).
     """
     registry: Dict[str, DistanceFn] = {}
 
+    def make_weighted_angle(rho: float) -> DistanceFn:
+        def dist(s: str, t: str) -> float:
+            return weighted_angle_distance(s, t, rho=rho, max_n=max_n_for_weighted)
+
+        return dist
+
+    def make_kgram_angle(k: int) -> DistanceFn:
+        def dist(s: str, t: str) -> float:
+            return kgram_cosine_angle_distance(s, t, k=k)
+
+        return dist
+
     # Your metric
     for rho in rho_values:
-        registry[f"weighted_angle_rho={rho}"] = (
-            lambda s, t, rho=rho: weighted_angle_distance(
-                s, t, rho=rho, max_n=max_n_for_weighted
-            )
-        )
+        registry[f"weighted_angle_rho={rho}"] = make_weighted_angle(float(rho))
 
     # Fixed-k cosine-angle baselines
     for k in k_values:
-        registry[f"kgram_angle_k={k}"] = lambda s, t, k=k: kgram_cosine_angle_distance(
-            s, t, k=k
-        )
+        registry[f"kgram_angle_k={k}"] = make_kgram_angle(int(k))
 
     # Edit-distance baseline
     registry["levenshtein"] = levenshtein_distance
@@ -127,9 +133,8 @@ def get_distance_registry(
             _ = jaro_winkler_distance("a", "a")
             registry["jaro_winkler"] = jaro_winkler_distance
         except ImportError:
-            # Silently skip: you can choose to be strict instead.
             pass
-            # Optional extras
+
         try:
             _ = longest_common_subsequence_length("a", "a")
             registry["lcs"] = longest_common_subsequence_length

@@ -1,8 +1,9 @@
 # tests/test_suite_properties.py
 from __future__ import annotations
 
-from hypothesis import given, settings, strategies as st
+from typing import Callable
 
+from hypothesis import given, settings, strategies as st
 import polars as pl
 
 from src.clustering.suite import (
@@ -25,6 +26,18 @@ def _first_char_distance(a: str, b: str) -> float:
     return 0.0 if a[0] == b[0] else 1.0
 
 
+def _make_loader(df: pl.DataFrame) -> Callable[[], pl.DataFrame]:
+    """
+    Typed loader factory (mypy-friendly).
+    Returning a clone avoids any accidental aliasing surprises.
+    """
+
+    def _load() -> pl.DataFrame:
+        return df.clone()
+
+    return _load
+
+
 LABELS = st.sampled_from(["EI", "IE", "N"])
 DNA = st.text(alphabet="ACGT", min_size=1, max_size=20)
 
@@ -35,13 +48,11 @@ DNA = st.text(alphabet="ACGT", min_size=1, max_size=20)
     max_rows=st.one_of(st.none(), st.integers(min_value=1, max_value=30)),
     seed=st.integers(min_value=0, max_value=2**31 - 1),
 )
-def test_run_dbscan_suite_row_count_and_schema_invariants(rows, max_rows, seed) -> None:
-    """
-    Property test (no pytest fixtures): result shape + schema invariants.
-    We set:
-      - out_dir=None and make_plots=False to avoid filesystem and viz.
-      - tune=False to avoid optuna/nontrivial tuning.
-    """
+def test_run_dbscan_suite_row_count_and_schema_invariants(
+    rows: list[tuple[str, str]],
+    max_rows: int | None,
+    seed: int,
+) -> None:
     df = pl.DataFrame(
         {
             "label": [lbl for (lbl, _seq) in rows],
@@ -49,10 +60,9 @@ def test_run_dbscan_suite_row_count_and_schema_invariants(rows, max_rows, seed) 
         }
     )
 
-    # Two importers to ensure importer×distance cross product is correct.
     importers = [
-        DataImporter(name="toy_a", load=lambda df=df: df),
-        DataImporter(name="toy_b", load=lambda df=df: df),
+        DataImporter(name="toy_a", load=_make_loader(df)),
+        DataImporter(name="toy_b", load=_make_loader(df)),
     ]
 
     distances = [
@@ -68,14 +78,12 @@ def test_run_dbscan_suite_row_count_and_schema_invariants(rows, max_rows, seed) 
         dbscan=cfg,
         max_rows=max_rows,
         seed=seed,
-        out_dir=None,  # avoid writes
-        make_plots=False,  # avoid viz calls
+        out_dir=None,
+        make_plots=False,
     )
 
-    # 1) Row count = |importers| * |distances|
     assert result.height == len(importers) * len(distances)
 
-    # 2) Schema/columns invariants
     expected_cols = {
         "dataset",
         "distance",
@@ -95,7 +103,6 @@ def test_run_dbscan_suite_row_count_and_schema_invariants(rows, max_rows, seed) 
     }
     assert set(result.columns) == expected_cols
 
-    # 3) Values consistent with knobs we set
     expected_n = len(rows) if max_rows is None else min(len(rows), int(max_rows))
 
     assert set(result["dataset"].to_list()) == {"toy_a", "toy_b"}
@@ -106,7 +113,6 @@ def test_run_dbscan_suite_row_count_and_schema_invariants(rows, max_rows, seed) 
     assert all(float(x) == cfg.eps for x in result["eps"].to_list())
     assert all(int(x) == cfg.min_samples for x in result["min_samples"].to_list())
 
-    # With out_dir=None and make_plots=False, paths should be null.
     assert all(x is None for x in result["heatmap_path"].to_list())
     assert all(x is None for x in result["mds_true_path"].to_list())
     assert all(x is None for x in result["mds_pred_path"].to_list())

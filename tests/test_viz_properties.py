@@ -5,7 +5,7 @@ import tempfile
 
 import numpy as np
 from hypothesis import given, settings, strategies as st
-
+from typing import Any
 from src.clustering.viz import (
     _to_int_labels,
     maybe_plot_distance_heatmap,
@@ -52,7 +52,7 @@ def test__to_int_labels_basic_invariants(labels) -> None:
     assert set(got.tolist()) == set(range(k))
 
     # Stable by first appearance: first occurrence index determines the id.
-    first_index = {}
+    first_index: dict[Any, int] = {}
     for i, x in enumerate(labels):
         first_index.setdefault(x, i)
 

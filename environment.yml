@@ -17,6 +17,7 @@ dependencies:
   - tqdm>=4.66,<4.67
   - rapidfuzz>=3.9,<3.10
   - pip>=24.2,<24.3
+  - scikit-learn-stubs
   - pip:
       - mypy>=1.13,<1.14
       - black>=24.8,<24.9

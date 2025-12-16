@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 from types import ModuleType, SimpleNamespace
-from typing import Callable
+from typing import Any, Callable
 
 import numpy as np
 import pytest
@@ -180,7 +180,7 @@ def test_tune_dbscan_silhouette_optuna_success_path_via_fake_module(
     D = _two_cluster_D(n_per_cluster=3, within=0.1, between=10.0)
 
     # --- fake optuna module ---
-    fake_optuna = ModuleType("optuna")
+    fake_optuna: Any = ModuleType("optuna")
 
     class FakeTPESampler:
         def __init__(self, seed: int):
@@ -216,8 +216,8 @@ def test_tune_dbscan_silhouette_optuna_success_path_via_fake_module(
     def create_study(*, direction: str, sampler: object) -> FakeStudy:
         return FakeStudy()
 
-    fake_optuna.samplers = SimpleNamespace(TPESampler=FakeTPESampler)
-    fake_optuna.create_study = create_study
+    setattr(fake_optuna, "samplers", SimpleNamespace(TPESampler=FakeTPESampler))
+    setattr(fake_optuna, "create_study", create_study)
 
     monkeypatch.setitem(sys.modules, "optuna", fake_optuna)
 
@@ -241,7 +241,7 @@ def test_tune_dbscan_silhouette_optuna_failure_falls_back(
 ) -> None:
     D = _two_cluster_D(n_per_cluster=3, within=0.1, between=10.0)
 
-    fake_optuna = ModuleType("optuna")
+    fake_optuna: Any = ModuleType("optuna")
 
     class FakeTPESampler:
         def __init__(self, seed: int):
@@ -250,8 +250,8 @@ def test_tune_dbscan_silhouette_optuna_failure_falls_back(
     def create_study(*, direction: str, sampler: object):
         raise RuntimeError("boom")
 
-    fake_optuna.samplers = SimpleNamespace(TPESampler=FakeTPESampler)
-    fake_optuna.create_study = create_study
+    setattr(fake_optuna, "samplers", SimpleNamespace(TPESampler=FakeTPESampler))
+    setattr(fake_optuna, "create_study", create_study)
 
     monkeypatch.setitem(sys.modules, "optuna", fake_optuna)
 
