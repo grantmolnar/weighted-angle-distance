@@ -9,7 +9,9 @@ from hypothesis import given, settings, strategies as st
 import src.data.synthetic_tandem_repeats as tr
 
 
-def _cfg_small(mutation_rate: float = 0.0) -> tr.SyntheticTandemRepeatConfig:
+def _cfg_small(
+    mutation_rate: float = 0.0, *, coerce_equal_length: bool = True
+) -> tr.SyntheticTandemRepeatConfig:
     # Keep this stable so Hypothesis runs are fast and non-flaky.
     return tr.SyntheticTandemRepeatConfig(
         n_samples=12,
@@ -24,6 +26,7 @@ def _cfg_small(mutation_rate: float = 0.0) -> tr.SyntheticTandemRepeatConfig:
         sep_len_min=0,
         sep_len_max=2,
         target_expected_total_length=30.0,
+        coerce_equal_length=bool(coerce_equal_length),
         repeat_cap=20,
         mutation_rate_non_motif=float(mutation_rate),
         label_sep="|",
@@ -51,11 +54,12 @@ def test_rand_int_inclusive_returns_inclusive_bounds(
     seed_labels=st.integers(min_value=0, max_value=2**31 - 1),
     seed_samples=st.integers(min_value=0, max_value=2**31 - 1),
     mutation=st.sampled_from([0.0, 1.0]),
+    coerce=st.booleans(),
 )
 def test_generate_df_invariants_balanced_deterministic_alphabet_and_motifs_present(
-    seed_labels: int, seed_samples: int, mutation: float
+    seed_labels: int, seed_samples: int, mutation: float, coerce: bool
 ) -> None:
-    cfg = _cfg_small(mutation_rate=mutation)
+    cfg = _cfg_small(mutation_rate=mutation, coerce_equal_length=coerce)
 
     df1 = tr.generate_synthetic_tandem_repeat_df(
         cfg, seed_labels=seed_labels, seed_samples=seed_samples

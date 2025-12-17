@@ -27,6 +27,7 @@ def _base_cfg(**overrides: object) -> tr.SyntheticTandemRepeatConfig:
         sep_len_min=0,
         sep_len_max=2,
         target_expected_total_length=30.0,
+        coerce_equal_length=True,
         repeat_cap=20,
         mutation_rate_non_motif=0.0,
         label_sep="|",
@@ -260,6 +261,7 @@ def test_generate_df_mutation_affects_only_non_motif_regions_when_k1_and_mu1() -
         sep_len_min=0,
         sep_len_max=0,
         target_expected_total_length=14.0,  # 10 flanks + 4 motif budget => mu = 1
+        coerce_equal_length=True,
         repeat_cap=999,
         mutation_rate_non_motif=0.0,
         label_sep="|",
@@ -338,3 +340,51 @@ def test_ensure_dataset_reads_if_exists_and_generates_if_missing(
     )
     assert _df_equal(got2, generated)
     assert out2.exists()
+
+
+def test_generate_df_coerce_equal_length_false_uses_uniform_repeats_and_allows_tiny_target(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Make everything except repeats deterministic & “structurally trivial”
+    cfg = tr.SyntheticTandemRepeatConfig(
+        n_samples=4,
+        n_classes=1,
+        motifs_per_label_min=1,
+        motifs_per_label_max=1,  # k=1
+        alphabet="ACGT",
+        motif_len_min=2,
+        motif_len_max=2,  # motif length fixed
+        flank_len_min=0,
+        flank_len_max=0,  # no prefix/suffix
+        sep_len_min=0,
+        sep_len_max=0,  # no separators
+        target_expected_total_length=0.1,  # would normally be invalid, but should be ignored
+        coerce_equal_length=False,  # NEW branch under test
+        repeat_cap=10,
+        mutation_rate_non_motif=0.0,
+        label_sep="|",
+    )
+
+    orig = tr._rand_int_inclusive
+    state = {"i": 0}
+
+    def rigged_rand_int_inclusive(rng: np.random.Generator, lo: int, hi: int) -> int:
+        # Only intercept the repeats draw: Uniform{1..repeat_cap}
+        if lo == 1 and hi == cfg.repeat_cap:
+            state["i"] += 1
+            return 1 if (state["i"] % 2 == 1) else cfg.repeat_cap
+        return orig(rng, lo, hi)
+
+    monkeypatch.setattr(
+        tr, "_rand_int_inclusive", rigged_rand_int_inclusive, raising=True
+    )
+
+    df = tr.generate_synthetic_tandem_repeat_df(cfg, seed_labels=0, seed_samples=0)
+
+    motif = df["label"][0]
+    seqs = df["sequence"].to_list()
+
+    # With no flanks/seps and k=1, sequence must be motif repeated r times.
+    expected_repeats = [1, cfg.repeat_cap, 1, cfg.repeat_cap]
+    for seq, r in zip(seqs, expected_repeats):
+        assert seq == motif * r

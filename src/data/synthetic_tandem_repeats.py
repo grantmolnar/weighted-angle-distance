@@ -48,6 +48,9 @@ class SyntheticTandemRepeatConfig:
     # Length-normalization target (controls expected overall sample length)
     target_expected_total_length: float
 
+    # control whether we normalize lengths (True) or allow wild length variation (False)
+    coerce_equal_length: bool
+
     # Repeat-count distribution and caps
     repeat_cap: int  # hard cap on repeats for any single motif (keeps tails bounded)
 
@@ -76,6 +79,8 @@ DEFAULT_SYNTHETIC_TR_CONFIG = SyntheticTandemRepeatConfig(
     # Choose a single “budget” so expected length is stable across classes.
     # Must be large enough that even (k=6, motif_len=8) can have mean repeats >= 1.
     target_expected_total_length=100.0,
+    # If True, we are obliged to keep our strings close to the same length
+    coerce_equal_length=False,
     # Keeps very short motifs from occasionally producing very long strings
     repeat_cap=120,
     # Default: no point mutation (easy to turn on later)
@@ -295,8 +300,15 @@ def generate_synthetic_tandem_repeat_df(
             # Repeat blocks
             blocks: list[str] = []
             for motif in class_label:
-                mu = _mean_repeats_for_class_and_motif(cfg, k=k, motif_len=len(motif))
-                r = _sample_repeats_geometric(rng, mu, cap=cfg.repeat_cap)
+                if cfg.coerce_equal_length:
+                    mu = _mean_repeats_for_class_and_motif(
+                        cfg, k=k, motif_len=len(motif)
+                    )
+                    r = _sample_repeats_geometric(rng, mu, cap=cfg.repeat_cap)
+                else:
+                    # Uniform repeats => lengths can vary wildly (intentionally)
+                    r = _rand_int_inclusive(rng, 1, cfg.repeat_cap)
+
                 blocks.append(motif * r)
 
             # Assemble: prefix + block1 + sep1 + block2 + ... + blockK + suffix

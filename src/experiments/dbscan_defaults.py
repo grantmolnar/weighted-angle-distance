@@ -23,13 +23,9 @@ def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+SYNTH_TR_PATH = processed_dir() / "synthetic_tandem_repeats.parquet"
 SPLICE_PATH = raw_dir() / "splice" / "splice.data"
 STRSEQ_PATH = processed_dir() / "strseq_alleles.parquet"
-SYNTH_TR_PATH = processed_dir() / "synthetic_tandem_repeats.parquet"
-
-
-def load_splice() -> pl.DataFrame:
-    return load_splice_to_polars(SPLICE_PATH)
 
 
 def load_synth_tr() -> pl.DataFrame:
@@ -39,6 +35,10 @@ def load_synth_tr() -> pl.DataFrame:
         seed_labels=42,
         seed_samples=1,
     )
+
+
+def load_splice() -> pl.DataFrame:
+    return load_splice_to_polars(SPLICE_PATH)
 
 
 def load_strseq() -> pl.DataFrame:
@@ -53,8 +53,8 @@ def load_strseq() -> pl.DataFrame:
 
 
 DATA_IMPORTERS: list[DataImporter] = [
-    # DataImporter(name="splice", load=load_splice),
     DataImporter(name="synthetic_tr", load=load_synth_tr),
+    DataImporter(name="splice", load=load_splice),
     DataImporter(name="strseq", load=load_strseq),
 ]
 
