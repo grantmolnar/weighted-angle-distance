@@ -267,3 +267,23 @@ def test_tune_dbscan_silhouette_optuna_failure_falls_back(
     assert isinstance(res, DbscanResult)
     assert res.min_samples in (2, 3)
     assert res.labels.shape == (6,)
+
+
+def test_eps_bounds_fix_when_high_becomes_less_than_low_after_bump() -> None:
+    # Construct a symmetric "distance" matrix whose upper triangle includes
+    # negative and zero values so that:
+    #   eps_low <= 0, eps_high == 0  (no fallback because eps_high > eps_low),
+    # then eps_low is bumped to 1e-12, making eps_high < eps_low
+    D = np.array(
+        [
+            [0.0, -1.0, 0.0],
+            [-1.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+        ],
+        dtype=float,
+    )
+
+    eps_low, eps_high = _eps_bounds_from_quantiles(D, q_low=0.2, q_high=0.8)
+
+    assert eps_low > 0.0
+    assert eps_high >= eps_low  # specifically hits the eps_high < eps_low repair
