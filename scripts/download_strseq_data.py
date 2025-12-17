@@ -236,7 +236,6 @@ def download_one_bioproject(
     return fasta_path, rows
 
 
-
 def main() -> None:
     p = argparse.ArgumentParser(
         description="Download STRSeq allele sequences (nuccore FASTA) for STRSeq BioProjects."
