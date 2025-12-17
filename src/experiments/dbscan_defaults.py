@@ -27,6 +27,7 @@ SPLICE_PATH = raw_dir() / "splice" / "splice.data"
 STRSEQ_PATH = processed_dir() / "strseq_alleles.parquet"
 SYNTH_TR_PATH = processed_dir() / "synthetic_tandem_repeats.parquet"
 
+
 def load_splice() -> pl.DataFrame:
     return load_splice_to_polars(SPLICE_PATH)
 
@@ -43,22 +44,24 @@ def load_synth_tr() -> pl.DataFrame:
 def load_strseq() -> pl.DataFrame:
     return load_strseq_alleles_to_polars(
         STRSEQ_PATH,
-        min_len=20,          # tweak as you like
-        max_len=600,         # tweak as you like
+        min_len=20,  # tweak as you like
+        max_len=600,  # tweak as you like
         only_acgt=True,
         drop_duplicate_sequences=True,
         # allowed_labels=[...],  # optionally restrict to 10 loci, etc.
     )
 
+
 DATA_IMPORTERS: list[DataImporter] = [
     # DataImporter(name="splice", load=load_splice),
     DataImporter(name="synthetic_tr", load=load_synth_tr),
-    DataImporter(name="strseq", load=load_strseq)
+    DataImporter(name="strseq", load=load_strseq),
 ]
 
 
 # Build the full registry once, then pick a subset by name.
-_RHOS: list[float] = [0.1 * i for i in range(6, 7)]
+r = 1 / 10
+_RHOS: list[float] = [r * i for i in range(1, int(1 / r) + 1)]
 _KS: list[int] = list(range(2, 50))
 
 _REG = get_distance_registry(

@@ -32,7 +32,9 @@ def load_strseq_alleles_to_polars(
     required = {"label", "sequence"}
     missing = required - set(df.columns)
     if missing:
-        raise ValueError(f"{p} is missing required columns: {sorted(missing)} (got {df.columns})")
+        raise ValueError(
+            f"{p} is missing required columns: {sorted(missing)} (got {df.columns})"
+        )
 
     # Normalize + basic hygiene
     df = df.with_columns(

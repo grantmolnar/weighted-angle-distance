@@ -180,7 +180,9 @@ def download_one_bioproject(
     out_dir.mkdir(parents=True, exist_ok=True)
 
     term = f"{bioproject}[BioProject]"
-    total, qk, we = _esearch_usehistory(db="nuccore", term=term, email=email, tool=tool, api_key=api_key)
+    total, qk, we = _esearch_usehistory(
+        db="nuccore", term=term, email=email, tool=tool, api_key=api_key
+    )
 
     suffix = ".fasta.gz" if gzip_fasta else ".fasta"
     fasta_path = out_dir / f"{bioproject}__{label}{suffix}"
@@ -196,31 +198,49 @@ def download_one_bioproject(
             fasta_path.write_text("", encoding="utf-8")
         return fasta_path, rows
 
-    opener = gzip.open if gzip_fasta else open  # type: ignore[assignment]
-    mode = "wt" if gzip_fasta else "w"
-
-    with opener(fasta_path, mode, encoding="utf-8") as f:  # type: ignore[misc]
-        for chunk in _efetch_fasta_chunks(
-            db="nuccore",
-            query_key=qk,
-            webenv=we,
-            total=total,
-            email=email,
-            tool=tool,
-            api_key=api_key,
-            retmax=retmax,
-            sleep_seconds=sleep_seconds,
-        ):
-            f.write(chunk)
-            for header, seq in _parse_fasta_records(chunk):
-                sample_id = _header_to_accession(header)
-                rows.append((label, sample_id, seq))
+    if gzip_fasta:
+        with gzip.open(fasta_path, "wt", encoding="utf-8", newline="\n") as f:
+            for chunk in _efetch_fasta_chunks(
+                db="nuccore",
+                query_key=qk,
+                webenv=we,
+                total=total,
+                email=email,
+                tool=tool,
+                api_key=api_key,
+                retmax=retmax,
+                sleep_seconds=sleep_seconds,
+            ):
+                f.write(chunk)
+                for header, seq in _parse_fasta_records(chunk):
+                    sample_id = _header_to_accession(header)
+                    rows.append((label, sample_id, seq))
+    else:
+        with open(fasta_path, "w", encoding="utf-8", newline="\n") as f:
+            for chunk in _efetch_fasta_chunks(
+                db="nuccore",
+                query_key=qk,
+                webenv=we,
+                total=total,
+                email=email,
+                tool=tool,
+                api_key=api_key,
+                retmax=retmax,
+                sleep_seconds=sleep_seconds,
+            ):
+                f.write(chunk)
+                for header, seq in _parse_fasta_records(chunk):
+                    sample_id = _header_to_accession(header)
+                    rows.append((label, sample_id, seq))
 
     return fasta_path, rows
 
 
+
 def main() -> None:
-    p = argparse.ArgumentParser(description="Download STRSeq allele sequences (nuccore FASTA) for STRSeq BioProjects.")
+    p = argparse.ArgumentParser(
+        description="Download STRSeq allele sequences (nuccore FASTA) for STRSeq BioProjects."
+    )
     p.add_argument(
         "--projects",
         nargs="*",
@@ -228,9 +248,24 @@ def main() -> None:
         help="BioProject accessions to download (e.g. PRJNA380553). Default: all known STRSeq subprojects.",
     )
     p.add_argument("--out-dir", type=Path, default=Path("src/data/strseq_fasta"))
-    p.add_argument("--parquet", type=Path, default=None, help="Optional: write combined parquet with label/sample_id/sequence.")
-    p.add_argument("--email", type=str, default=os.environ.get("NCBI_EMAIL", ""), help="NCBI contact email (or set NCBI_EMAIL).")
-    p.add_argument("--api-key", type=str, default=os.environ.get("NCBI_API_KEY", ""), help="NCBI API key (or set NCBI_API_KEY).")
+    p.add_argument(
+        "--parquet",
+        type=Path,
+        default=None,
+        help="Optional: write combined parquet with label/sample_id/sequence.",
+    )
+    p.add_argument(
+        "--email",
+        type=str,
+        default=os.environ.get("NCBI_EMAIL", ""),
+        help="NCBI contact email (or set NCBI_EMAIL).",
+    )
+    p.add_argument(
+        "--api-key",
+        type=str,
+        default=os.environ.get("NCBI_API_KEY", ""),
+        help="NCBI API key (or set NCBI_API_KEY).",
+    )
     p.add_argument("--tool", type=str, default="weighted-angle-distance")
     p.add_argument("--gzip", action="store_true", help="Write gzipped FASTA files.")
     p.add_argument("--retmax", type=int, default=500, help="EFetch chunk size.")
@@ -243,14 +278,18 @@ def main() -> None:
     args = p.parse_args()
 
     if not args.email:
-        raise SystemExit("ERROR: please pass --email or set NCBI_EMAIL (NCBI requests you identify yourself).")
+        raise SystemExit(
+            "ERROR: please pass --email or set NCBI_EMAIL (NCBI requests you identify yourself)."
+        )
 
     api_key = args.api_key or None
 
     projects = args.projects or list(STRSEQ_PROJECTS.keys())
     unknown = [p for p in projects if p not in STRSEQ_PROJECTS]
     if unknown:
-        raise SystemExit(f"Unknown projects (not in STRSEQ_PROJECTS mapping): {unknown}")
+        raise SystemExit(
+            f"Unknown projects (not in STRSEQ_PROJECTS mapping): {unknown}"
+        )
 
     all_rows: List[Tuple[str, str, str]] = []
 
