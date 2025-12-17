@@ -72,7 +72,7 @@ DEFAULT_SYNTHETIC_TR_CONFIG = SyntheticTandemRepeatConfig(
     flank_len_min=0,
     flank_len_max=8,
     sep_len_min=0,
-    sep_len_max=8,
+    sep_len_max=0,
     # Choose a single “budget” so expected length is stable across classes.
     # Must be large enough that even (k=6, motif_len=8) can have mean repeats >= 1.
     target_expected_total_length=100.0,
@@ -133,7 +133,7 @@ def _mean_repeats_for_class_and_motif(
     motif_len: int,
 ) -> float:
     """
-    Choose mean repeats μ so that expected total length is (approximately) constant.
+    Choose mean repeats mu so that expected total length is (approximately) constant.
 
     Let:
       L_total_target = cfg.target_expected_total_length
@@ -143,7 +143,7 @@ def _mean_repeats_for_class_and_motif(
     We allocate the remaining expected length equally among the k motif blocks,
     then divide by motif_len to get mean repeats.
 
-    μ = ((L_total_target - E_flanks - E_seps) / k) / motif_len
+    mu = ((L_total_target - E_flanks - E_seps) / k) / motif_len
     """
     e_flank = 2.0 * _expected_uniform_int(cfg.flank_len_min, cfg.flank_len_max)
     e_sep = _expected_uniform_int(cfg.sep_len_min, cfg.sep_len_max)
@@ -207,7 +207,9 @@ def _generate_class_labels(
     while len(classes) < cfg.n_classes:
         attempts += 1
         if attempts > max_attempts:
-            raise RuntimeError("Failed to generate unique class labels; relax constraints.")
+            raise RuntimeError(
+                "Failed to generate unique class labels; relax constraints."
+            )
 
         k = _rand_int_inclusive(rng, cfg.motifs_per_label_min, cfg.motifs_per_label_max)
 
@@ -309,10 +311,17 @@ def generate_synthetic_tandem_repeat_df(
             # Optional mutations in non-motif regions only:
             # We mutate prefix, separators, suffix (not the motif blocks).
             if cfg.mutation_rate_non_motif > 0:
-                prefix_m = _mutate_string_nonmotif(rng, prefix, cfg.alphabet, cfg.mutation_rate_non_motif)
-                suffix_m = _mutate_string_nonmotif(rng, suffix, cfg.alphabet, cfg.mutation_rate_non_motif)
+                prefix_m = _mutate_string_nonmotif(
+                    rng, prefix, cfg.alphabet, cfg.mutation_rate_non_motif
+                )
+                suffix_m = _mutate_string_nonmotif(
+                    rng, suffix, cfg.alphabet, cfg.mutation_rate_non_motif
+                )
                 seps_m = [
-                    _mutate_string_nonmotif(rng, s, cfg.alphabet, cfg.mutation_rate_non_motif) for s in seps
+                    _mutate_string_nonmotif(
+                        rng, s, cfg.alphabet, cfg.mutation_rate_non_motif
+                    )
+                    for s in seps
                 ]
                 parts2: list[str] = [prefix_m]
                 for j in range(k):
@@ -346,6 +355,8 @@ def ensure_synthetic_tandem_repeat_dataset(
         return pl.read_parquet(out_path)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    df = generate_synthetic_tandem_repeat_df(cfg, seed_labels=seed_labels, seed_samples=seed_samples)
+    df = generate_synthetic_tandem_repeat_df(
+        cfg, seed_labels=seed_labels, seed_samples=seed_samples
+    )
     df.write_parquet(out_path)
     return df

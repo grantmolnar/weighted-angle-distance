@@ -5,14 +5,17 @@ from pathlib import Path
 
 import polars as pl
 
+from src.data.paths import raw_dir, processed_dir
+
 from src.clustering.suite import DataImporter, DistanceSpec
 from src.data.splice_loader import load_splice_to_polars
+from src.data.strseq_loader import load_strseq_alleles_to_polars
+
 from src.string_distances.distance_registry import get_distance_registry
 
-
-from src.data.synthetic_tandem_repeat import (
-    TandemRepeatConfig,
-    generate_tandem_repeat_df,
+from src.data.synthetic_tandem_repeats import (
+    DEFAULT_SYNTHETIC_TR_CONFIG,
+    ensure_synthetic_tandem_repeat_dataset,
 )
 
 
@@ -20,42 +23,42 @@ def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
-SPLICE_PATH = (
-    repo_root()
-    / "src"
-    / "data"
-    / "molecular+biology+splice+junction+gene+sequences"
-    / "splice.data"
-)
-
+SPLICE_PATH = raw_dir() / "splice" / "splice.data"
+STRSEQ_PATH = processed_dir() / "strseq_alleles.parquet"
+SYNTH_TR_PATH = processed_dir() / "synthetic_tandem_repeats.parquet"
 
 def load_splice() -> pl.DataFrame:
     return load_splice_to_polars(SPLICE_PATH)
 
 
-def load_tandem_repeat_synth() -> pl.DataFrame:
-    cfg = TandemRepeatConfig(
-        seed=20251215,
-        n_motifs=20,
-        motif_len_min=3,
-        motif_len_max=12,
-        l_max=12,
-        flank_len=10,
-        replicates_per_repeat=3,
-        eta=0.01,
-        max_total_len=60,
+def load_synth_tr() -> pl.DataFrame:
+    return ensure_synthetic_tandem_repeat_dataset(
+        SYNTH_TR_PATH,
+        DEFAULT_SYNTHETIC_TR_CONFIG,
+        seed_labels=42,
+        seed_samples=1,
     )
-    return generate_tandem_repeat_df(cfg)
 
+
+def load_strseq() -> pl.DataFrame:
+    return load_strseq_alleles_to_polars(
+        STRSEQ_PATH,
+        min_len=20,          # tweak as you like
+        max_len=600,         # tweak as you like
+        only_acgt=True,
+        drop_duplicate_sequences=True,
+        # allowed_labels=[...],  # optionally restrict to 10 loci, etc.
+    )
 
 DATA_IMPORTERS: list[DataImporter] = [
     # DataImporter(name="splice", load=load_splice),
-    DataImporter(name="tandem_repeat_synth", load=load_tandem_repeat_synth),
+    DataImporter(name="synthetic_tr", load=load_synth_tr),
+    DataImporter(name="strseq", load=load_strseq)
 ]
 
 
 # Build the full registry once, then pick a subset by name.
-_RHOS: list[float] = [0.1 * i for i in range(1, 10)]
+_RHOS: list[float] = [0.1 * i for i in range(6, 7)]
 _KS: list[int] = list(range(2, 50))
 
 _REG = get_distance_registry(
@@ -72,7 +75,7 @@ DISTANCE_KEYS: list[str] = (
         "lcs",  # optional: may not exist
     ]
     + [f"weighted_angle_rho={r}" for r in _RHOS]
-    + [f"kgram_angle_k={k}" for k in range(2, 7)]
+    + [f"kgram_angle_k={k}" for k in range(4, 5)]
 )
 
 # If you want to be strict about some distances existing, do it here.

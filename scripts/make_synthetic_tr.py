@@ -27,13 +27,23 @@ def build_parser() -> argparse.ArgumentParser:
         default=_repo_root() / "src" / "data" / "synthetic_tandem_repeats.parquet",
         help="Output parquet path.",
     )
-    p.add_argument("--force", action="store_true", help="Overwrite output if it already exists.")
-    p.add_argument("--seed-labels", type=int, default=0, help="Seed for generating class labels.")
-    p.add_argument("--seed-samples", type=int, default=1, help="Seed for per-sample randomness.")
+    p.add_argument(
+        "--force", action="store_true", help="Overwrite output if it already exists."
+    )
+    p.add_argument(
+        "--seed-labels", type=int, default=0, help="Seed for generating class labels."
+    )
+    p.add_argument(
+        "--seed-samples", type=int, default=1, help="Seed for per-sample randomness."
+    )
 
     # Dataset size / class structure
-    p.add_argument("--n-samples", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.n_samples)
-    p.add_argument("--n-classes", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.n_classes)
+    p.add_argument(
+        "--n-samples", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.n_samples
+    )
+    p.add_argument(
+        "--n-classes", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.n_classes
+    )
     p.add_argument(
         "--motifs-per-label-min",
         type=int,
@@ -47,14 +57,26 @@ def build_parser() -> argparse.ArgumentParser:
 
     # Alphabet and motif lengths
     p.add_argument("--alphabet", type=str, default=DEFAULT_SYNTHETIC_TR_CONFIG.alphabet)
-    p.add_argument("--motif-len-min", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.motif_len_min)
-    p.add_argument("--motif-len-max", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.motif_len_max)
+    p.add_argument(
+        "--motif-len-min", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.motif_len_min
+    )
+    p.add_argument(
+        "--motif-len-max", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.motif_len_max
+    )
 
     # Flanks and separators
-    p.add_argument("--flank-len-min", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.flank_len_min)
-    p.add_argument("--flank-len-max", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.flank_len_max)
-    p.add_argument("--sep-len-min", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.sep_len_min)
-    p.add_argument("--sep-len-max", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.sep_len_max)
+    p.add_argument(
+        "--flank-len-min", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.flank_len_min
+    )
+    p.add_argument(
+        "--flank-len-max", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.flank_len_max
+    )
+    p.add_argument(
+        "--sep-len-min", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.sep_len_min
+    )
+    p.add_argument(
+        "--sep-len-max", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.sep_len_max
+    )
 
     # Length normalization / repeats
     p.add_argument(
@@ -63,7 +85,9 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_SYNTHETIC_TR_CONFIG.target_expected_total_length,
         help="Controls the approximate expected overall sample length.",
     )
-    p.add_argument("--repeat-cap", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.repeat_cap)
+    p.add_argument(
+        "--repeat-cap", type=int, default=DEFAULT_SYNTHETIC_TR_CONFIG.repeat_cap
+    )
 
     # Noise
     p.add_argument(
@@ -73,7 +97,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     # Label formatting
-    p.add_argument("--label-sep", type=str, default=DEFAULT_SYNTHETIC_TR_CONFIG.label_sep)
+    p.add_argument(
+        "--label-sep", type=str, default=DEFAULT_SYNTHETIC_TR_CONFIG.label_sep
+    )
 
     return p
 
@@ -118,7 +144,12 @@ def main() -> None:
     print(f"  n_samples={cfg.n_samples}, n_classes={cfg.n_classes}")
     print(
         "  motifs_per_label=[%d,%d], motif_len=[%d,%d]"
-        % (cfg.motifs_per_label_min, cfg.motifs_per_label_max, cfg.motif_len_min, cfg.motif_len_max)
+        % (
+            cfg.motifs_per_label_min,
+            cfg.motifs_per_label_max,
+            cfg.motif_len_min,
+            cfg.motif_len_max,
+        )
     )
     print(
         "  flank_len=[%d,%d], sep_len=[%d,%d]"
@@ -126,10 +157,16 @@ def main() -> None:
     )
     print(
         "  target_expected_total_length=%.3f, repeat_cap=%d, mutation_rate_non_motif=%.6f"
-        % (cfg.target_expected_total_length, cfg.repeat_cap, cfg.mutation_rate_non_motif)
+        % (
+            cfg.target_expected_total_length,
+            cfg.repeat_cap,
+            cfg.mutation_rate_non_motif,
+        )
     )
     print(f"  label_sep={cfg.label_sep!r}")
-    print(f"Seeds: seed_labels={int(args.seed_labels)}, seed_samples={int(args.seed_samples)}")
+    print(
+        f"Seeds: seed_labels={int(args.seed_labels)}, seed_samples={int(args.seed_samples)}"
+    )
 
 
 if __name__ == "__main__":
