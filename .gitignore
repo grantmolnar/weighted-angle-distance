@@ -38,5 +38,5 @@ splice.parquet
 outputs/
 mutants/
 
-data/raw/
-data/processed/
+data/
+data/

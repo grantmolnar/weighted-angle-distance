@@ -4,33 +4,39 @@ from dataclasses import dataclass
 from typing import Sequence
 
 import numpy as np
+
 from sklearn.cluster import DBSCAN
 from sklearn.metrics import silhouette_score
 
 from src.string_distances.distance_registry import DistanceFn
 
 
-def pairwise_distance_matrix(
-    sequences: Sequence[str],
-    dist: DistanceFn,
-) -> np.ndarray:
-    """
-    Compute an NxN symmetric distance matrix using `dist`.
-
-    Notes
-    -----
-    This is O(N^2) calls to `dist`. Start with a small N (e.g. 200..1000) until you
-    replace this with something optimized/parallelized.
-    """
+def pairwise_distance_matrix(sequences, dist):
     n = len(sequences)
+
+    # Fast path: distance function optionally exposes a vectorized pairwise builder.
+    pairwise = getattr(dist, "pairwise", None)
+    if callable(pairwise):
+        D = np.asarray(pairwise(sequences), dtype=float)
+        if D.shape != (n, n):
+            raise ValueError(f"dist.pairwise returned shape {D.shape}, expected {(n, n)}")
+        # Ensure exact zeros on diagonal (some implementations may not guarantee it)
+        np.fill_diagonal(D, 0.0)
+        return D
+
+    # Fallback: O(N^2) calls to dist
     D = np.zeros((n, n), dtype=float)
     for i in range(n):
+        if i % 25 == 0:
+            print(f"[D] row {i}/{n}", flush=True)
         si = sequences[i]
         for j in range(i + 1, n):
             d = dist(si, sequences[j])
             D[i, j] = d
             D[j, i] = d
     return D
+
+
 
 
 def run_dbscan_precomputed(
@@ -118,7 +124,7 @@ class DbscanResult:
 def tune_dbscan_silhouette(
     D: np.ndarray,
     *,
-    n_trials: int = 40,
+    n_trials: int = 100,
     min_samples_values: Sequence[int] = (3, 5, 8, 13),
     eps_quantiles: tuple[float, float] = (0.02, 0.20),
     seed: int = 0,

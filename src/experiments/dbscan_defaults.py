@@ -10,7 +10,6 @@ from src.data.paths import raw_dir, processed_dir
 from src.clustering.suite import DataImporter, DistanceSpec
 from src.data.splice_loader import load_splice_to_polars
 from src.data.strseq_loader import load_strseq_alleles_to_polars
-from src.data.fluencybank_loader import load_fluencybank_to_polars
 from src.data.ucsc_trf_loader import load_ucsc_trf_to_polars
 
 from src.string_distances.distance_registry import get_distance_registry
@@ -20,16 +19,21 @@ from src.data.synthetic_tandem_repeats import (
     ensure_synthetic_tandem_repeat_dataset,
 )
 
+# import faulthandler
+# faulthandler.enable()
+# faulthandler.dump_traceback_later(30, repeat=True)
 
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
 SYNTH_TR_PATH = processed_dir() / "synthetic_tandem_repeats.parquet"
-SPLICE_PATH = raw_dir() / "splice" / "splice.data"
+SPLICE_PATH = (
+    processed_dir() / "splice" / "splice.data"
+)  # raw_dir() / "splice" / "splice.data"
 STRSEQ_PATH = processed_dir() / "strseq_alleles.parquet"
-FLUENCYBANK_HAKIM_PATH = processed_dir() / "fluencybank_hakim_utterances.parquet"
 UCSC_TRF_PATH = processed_dir() / "ucsc_trf_hg19.parquet"
+
 
 def load_synth_tr() -> pl.DataFrame:
     return ensure_synthetic_tandem_repeat_dataset(
@@ -41,27 +45,21 @@ def load_synth_tr() -> pl.DataFrame:
 
 
 def load_splice() -> pl.DataFrame:
+    if not SPLICE_PATH.exists():
+        raise FileNotFoundError(f"splice.data not found at {SPLICE_PATH}")
     return load_splice_to_polars(SPLICE_PATH)
 
 
 def load_strseq() -> pl.DataFrame:
     return load_strseq_alleles_to_polars(
         STRSEQ_PATH,
-        min_len=20,  # tweak as you like
-        max_len=600,  # tweak as you like
+        min_len=20,
+        max_len=600,
         only_acgt=True,
         drop_duplicate_sequences=True,
         # allowed_labels=[...],  # optionally restrict to 10 loci, etc.
     )
 
-def load_fluencybank_hakim() -> pl.DataFrame:
-    return load_fluencybank_to_polars(
-        FLUENCYBANK_HAKIM_PATH,
-        min_len=5,
-        max_len=400,
-        drop_duplicate_sequences=True,
-        # allowed_labels=["CWS", "CONTROL"],  # if you want to enforce
-    )
 
 def load_ucsc_trf() -> pl.DataFrame:
     return load_ucsc_trf_to_polars(
@@ -75,11 +73,11 @@ def load_ucsc_trf() -> pl.DataFrame:
         seed=0,
     )
 
+
 DATA_IMPORTERS: list[DataImporter] = [
     DataImporter(name="synthetic_tr", load=load_synth_tr),
     DataImporter(name="splice", load=load_splice),
     DataImporter(name="strseq", load=load_strseq),
-    DataImporter(name="fluencybank_hakim", load=load_fluencybank_hakim),
     DataImporter(name="ucsc_trf", load=load_ucsc_trf),
 ]
 

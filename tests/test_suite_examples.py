@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
+import re
 import numpy as np
 import polars as pl
 import pytest
@@ -372,3 +373,48 @@ def test_run_dbscan_suite_missing_required_columns_raises() -> None:
 
     with pytest.raises(ValueError):
         suite_mod.run_dbscan_suite([importer], [dist], out_dir=None, make_plots=False)
+
+def test_report_rankings_skips_when_missing_columns(capsys) -> None:
+    df = pl.DataFrame({"dataset": ["a"], "distance": ["d1"], "ari": [0.1]})  # missing nmi
+    suite_mod.report_rankings(df)
+
+    out = capsys.readouterr().out
+    assert "[rankings] Skipping: results missing columns:" in out
+    assert "nmi" in out
+
+
+def test_report_rankings_prints_rankings_and_top3(capsys) -> None:
+    # Two datasets; two distances each.
+    df = pl.DataFrame(
+        {
+            "dataset": ["ds1", "ds1", "ds2", "ds2"],
+            "distance": ["levenshtein", "kgram", "levenshtein", "kgram"],
+            "ari": [0.90, 0.20, 0.10, 0.80],
+            "nmi": [0.80, 0.30, 0.20, 0.70],
+        }
+    )
+
+    suite_mod.report_rankings(df)
+    out = capsys.readouterr().out
+
+    # Basic structure
+    assert "Dataset:" in out
+    assert "ARI (best -> worst):" in out
+    assert "NMI (best -> worst):" in out
+    assert "Top-3 by average rank (ARI+NMI):" in out
+
+    # It should mention both datasets
+    assert "Dataset: ds1" in out
+    assert "Dataset: ds2" in out
+
+    # It should print rank lines like " 1. levenshtein ..."
+    assert re.search(r"\n\s*1\.\s+levenshtein", out) is not None
+    assert re.search(r"\n\s*2\.\s+kgram", out) is not None
+
+    # It should print the top summary lines like "- levenshtein: ari=..."
+    assert "- levenshtein:" in out
+    assert "- kgram:" in out
+
+    # And should format floats to 4 decimals in the per-distance rows
+    assert "ari=0.9000" in out or "ari=0.8000" in out or "ari=0.2000" in out
+    assert "nmi=0.8000" in out or "nmi=0.7000" in out or "nmi=0.3000" in out

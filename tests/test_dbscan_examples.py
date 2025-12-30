@@ -65,6 +65,68 @@ def test_pairwise_distance_matrix_values_symmetry_and_call_count() -> None:
 
     # should call dist exactly n*(n-1)/2 times
     assert calls["n"] == 3
+    
+
+def test_pairwise_distance_matrix_fast_path_uses_pairwise_and_zeros_diagonal() -> None:
+    class Dist:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def pairwise(self, seqs):
+            self.calls += 1
+            n = len(seqs)
+            # Deliberately put nonzero diagonal to verify we zero it out.
+            return np.full((n, n), 7.0, dtype=float)
+
+    dist = Dist()
+    seqs = ["a", "bb", "ccc"]
+
+    D = pairwise_distance_matrix(seqs, dist)
+
+    assert dist.calls == 1
+    assert D.shape == (3, 3)
+    assert np.allclose(np.diag(D), 0.0)
+    # off-diagonals should remain 7.0
+    assert D[0, 1] == 7.0 and D[1, 0] == 7.0
+    assert D[0, 2] == 7.0 and D[2, 0] == 7.0
+    assert D[1, 2] == 7.0 and D[2, 1] == 7.0
+
+
+def test_pairwise_distance_matrix_fast_path_raises_on_wrong_shape() -> None:
+    class Dist:
+        def pairwise(self, seqs):
+            n = len(seqs)
+            return np.zeros((n, n + 1), dtype=float)  # wrong shape
+
+    with pytest.raises(ValueError, match=r"dist\.pairwise returned shape"):
+        pairwise_distance_matrix(["a", "b", "c"], Dist())
+
+
+def test_pairwise_distance_matrix_fallback_path_progress_and_call_count(capsys) -> None:
+    class Dist:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def __call__(self, a: str, b: str) -> float:
+            self.calls += 1
+            return 1.0
+
+    dist = Dist()
+    seqs = [str(i) for i in range(26)]  # triggers prints at i=0 and i=25
+
+    D = pairwise_distance_matrix(seqs, dist)
+
+    out = capsys.readouterr().out
+    assert "[D] row 0/26" in out
+    assert "[D] row 25/26" in out
+
+    # N*(N-1)/2 calls in fallback mode
+    assert dist.calls == 26 * 25 // 2
+
+    # Basic matrix sanity
+    assert D.shape == (26, 26)
+    assert np.allclose(np.diag(D), 0.0)
+    assert np.allclose(D, D.T)
 
 
 def test_run_dbscan_precomputed_finds_two_clusters() -> None:
@@ -287,3 +349,4 @@ def test_eps_bounds_fix_when_high_becomes_less_than_low_after_bump() -> None:
 
     assert eps_low > 0.0
     assert eps_high >= eps_low  # specifically hits the eps_high < eps_low repair
+

@@ -68,7 +68,14 @@ def _iter_trf_bed_gz(path: Path) -> Iterator[TrfRow]:
             period = int(parts[4])
             copies = float(parts[5])
             unit = parts[15].strip().upper()
-            yield TrfRow(chrom=chrom, start=start, end=end, period=period, copies=copies, unit=unit)
+            yield TrfRow(
+                chrom=chrom,
+                start=start,
+                end=end,
+                period=period,
+                copies=copies,
+                unit=unit,
+            )
 
 
 def _is_acgt(s: str) -> bool:
@@ -156,9 +163,12 @@ def download_ucsc_trf_repeats(
         if max_total_rows > 0 and len(rows) >= max_total_rows:
             break
 
-    df = pl.DataFrame(rows, schema=["label", "sample_id", "sequence"])
+    df = pl.DataFrame(rows, schema=["label", "sample_id", "sequence"], orient="row")
+
     df.write_parquet(parquet_path)
-    print(f"Wrote parquet: {parquet_path}  (rows={df.height}, labels={df['label'].n_unique()})")
+    print(
+        f"Wrote parquet: {parquet_path}  (rows={df.height}, labels={df['label'].n_unique()})"
+    )
 
     if not keep_bed_gz:
         bed_gz_path.unlink(missing_ok=True)
@@ -168,16 +178,39 @@ def main() -> None:
     p = argparse.ArgumentParser(
         description="Download UCSC TRF tandem repeats and build a labeled parquet (label=repeat unit)."
     )
-    p.add_argument("--assembly", type=str, default="hg19", help="Genome assembly (e.g. hg19, hg38).")
+    p.add_argument(
+        "--assembly",
+        type=str,
+        default="hg19",
+        help="Genome assembly (e.g. hg19, hg38).",
+    )
     p.add_argument("--out-dir", type=Path, default=Path("data/raw/ucsc_trf"))
-    p.add_argument("--parquet", type=Path, default=Path("data/processed/ucsc_trf.parquet"))
-    p.add_argument("--keep-bed", action="store_true", help="Keep downloaded {assembly}.trf.bed.gz.")
+    p.add_argument(
+        "--parquet", type=Path, default=Path("data/processed/ucsc_trf.parquet")
+    )
+    p.add_argument(
+        "--keep-bed", action="store_true", help="Keep downloaded {assembly}.trf.bed.gz."
+    )
     p.add_argument("--min-len", type=int, default=20)
     p.add_argument("--max-len", type=int, default=600)
-    p.add_argument("--only-acgt", action="store_true", help="Filter to motifs over A/C/G/T only.")
-    p.add_argument("--top-k-labels", type=int, default=200, help="Keep only the top-K most frequent motifs (0=all).")
-    p.add_argument("--min-per-label", type=int, default=25, help="Only consider motifs with >= this many samples.")
-    p.add_argument("--max-total-rows", type=int, default=50000, help="Cap output size (0=no cap).")
+    p.add_argument(
+        "--only-acgt", action="store_true", help="Filter to motifs over A/C/G/T only."
+    )
+    p.add_argument(
+        "--top-k-labels",
+        type=int,
+        default=200,
+        help="Keep only the top-K most frequent motifs (0=all).",
+    )
+    p.add_argument(
+        "--min-per-label",
+        type=int,
+        default=25,
+        help="Only consider motifs with >= this many samples.",
+    )
+    p.add_argument(
+        "--max-total-rows", type=int, default=50000, help="Cap output size (0=no cap)."
+    )
     args = p.parse_args()
 
     download_ucsc_trf_repeats(

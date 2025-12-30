@@ -36,6 +36,7 @@ from src.string_distances.weighted_angle_distance import (  # type: ignore
 # Benchmarking helpers
 # ----------------------------
 
+
 @dataclass(frozen=True)
 class BenchRow:
     n_s: int
@@ -182,7 +183,9 @@ def main() -> None:
         default="64,96,128,192,256,384,512,768,1024",
         help="Comma-separated lengths to benchmark (S and T).",
     )
-    ap.add_argument("--reps", type=int, default=7, help="Repetitions per length per impl.")
+    ap.add_argument(
+        "--reps", type=int, default=7, help="Repetitions per length per impl."
+    )
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument(
         "--pairs-per-length",
@@ -296,7 +299,9 @@ def main() -> None:
     print("\nEstimated log–log slopes (time ~ n^alpha):")
     print(f"  naive alpha ≈ {alpha_naive:.3f}")
     print(f"  trie  alpha ≈ {alpha_trie:.3f}")
-    print(f"  speedup alpha ≈ {alpha_speedup:.3f}  (expect ~1 if naive~n^2 and trie~n^1)")
+    print(
+        f"  speedup alpha ≈ {alpha_speedup:.3f}  (expect ~1 if naive~n^2 and trie~n^1)"
+    )
 
     if args.plot:
         _maybe_plot(out_csv, rows)
