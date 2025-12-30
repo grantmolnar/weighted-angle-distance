@@ -374,8 +374,11 @@ def test_run_dbscan_suite_missing_required_columns_raises() -> None:
     with pytest.raises(ValueError):
         suite_mod.run_dbscan_suite([importer], [dist], out_dir=None, make_plots=False)
 
+
 def test_report_rankings_skips_when_missing_columns(capsys) -> None:
-    df = pl.DataFrame({"dataset": ["a"], "distance": ["d1"], "ari": [0.1]})  # missing nmi
+    df = pl.DataFrame(
+        {"dataset": ["a"], "distance": ["d1"], "ari": [0.1]}
+    )  # missing nmi
     suite_mod.report_rankings(df)
 
     out = capsys.readouterr().out

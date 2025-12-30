@@ -65,7 +65,7 @@ def test_pairwise_distance_matrix_values_symmetry_and_call_count() -> None:
 
     # should call dist exactly n*(n-1)/2 times
     assert calls["n"] == 3
-    
+
 
 def test_pairwise_distance_matrix_fast_path_uses_pairwise_and_zeros_diagonal() -> None:
     class Dist:
@@ -349,4 +349,3 @@ def test_eps_bounds_fix_when_high_becomes_less_than_low_after_bump() -> None:
 
     assert eps_low > 0.0
     assert eps_high >= eps_low  # specifically hits the eps_high < eps_low repair
-

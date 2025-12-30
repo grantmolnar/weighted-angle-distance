@@ -9,12 +9,14 @@ from hypothesis import given, settings, strategies as st
 
 import src.string_distances.distance_registry as dr
 
+
 def _clear_distance_registry_caches() -> None:
     # These exist only after the speedup patch; guard for safety.
     for name in ("_rf_levenshtein_distance", "_rf_process_cdist"):
         fn = getattr(dr, name, None)
         if fn is not None and hasattr(fn, "cache_clear"):
             fn.cache_clear()  # type: ignore[attr-defined]
+
 
 def _force_rapidfuzz_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
     stub = ModuleType("rapidfuzz")

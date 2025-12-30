@@ -132,7 +132,9 @@ def _kgram_counts(s: str, k: int) -> Counter[str]:
     return Counter(s[i : i + k] for i in range(len(s) - k + 1))
 
 
-def jensen_shannon_kgram_distance(a: str, b: str, k: int = 3, eps: float = 1e-12) -> float:
+def jensen_shannon_kgram_distance(
+    a: str, b: str, k: int = 3, eps: float = 1e-12
+) -> float:
     """
     Jensen-Shannon *distance* between k-gram distributions (base-2 log).
     Returns a value in [0, 1] for typical inputs.
@@ -217,12 +219,18 @@ def get_distance_registry(
 
         registry["damerau_levenshtein"] = damerau_levenshtein_distance
 
+        def make_js_kgram(kk: int) -> DistanceFn:
+            def dist(s: str, t: str) -> float:
+                return jensen_shannon_kgram_distance(s, t, k=kk)
+
+            return dist
+
         # Jensen-Shannon k-gram distances
         for k in js_k_values:
             kk = int(k)
-            registry[f"js_kgram_k={kk}"] = (
-                lambda kk=kk: (lambda s, t: jensen_shannon_kgram_distance(s, t, k=kk))
-            )()
+            registry[f"js_kgram_k={kk}"] = registry[f"js_kgram_k={kk}"] = make_js_kgram(
+                kk
+            )
 
     # ncd_compressors intentionally unused for now, to keep the registry pure-python
     _ = ncd_compressors

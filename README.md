@@ -18,6 +18,12 @@ conda activate string-metric-experiments
 # Install this repo as an editable package
 pip install -e .
 
+# Save off the datasets by running
+
+python -m scripts.download_splice
+python -m scripts.download_strseq_data
+python -m scripts.download_ucsc_trf_repeats.py
+
 ## Run Clustering Experiments
 
 python -m scripts.run_dbscan

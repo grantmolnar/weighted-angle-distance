@@ -66,16 +66,23 @@ def _force_rapidfuzz_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
     _clear_distance_registry_caches()
 
 
-def test_levenshtein_distance_uses_rapidfuzz_when_available(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_levenshtein_distance_uses_rapidfuzz_when_available(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _install_fake_rapidfuzz(monkeypatch, lev_value=5.0)
     assert dr.levenshtein_distance("x", "y") == 5.0
 
 
-def test_levenshtein_distance_falls_back_when_rapidfuzz_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_levenshtein_distance_falls_back_when_rapidfuzz_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _force_rapidfuzz_unavailable(monkeypatch)
     assert dr.levenshtein_distance("kitten", "sitting") == 3.0
 
-def test_levenshtein_pairwise_uses_cdist_when_available(monkeypatch: pytest.MonkeyPatch) -> None:
+
+def test_levenshtein_pairwise_uses_cdist_when_available(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _install_fake_rapidfuzz(monkeypatch, lev_value=5.0, include_process=True)
     seqs = ["a", "bb", "ccc"]
     D = dr.levenshtein_distance.pairwise(seqs)  # type: ignore[attr-defined]
@@ -84,7 +91,9 @@ def test_levenshtein_pairwise_uses_cdist_when_available(monkeypatch: pytest.Monk
     assert np.all(D == 5.0)
 
 
-def test_levenshtein_pairwise_falls_back_when_cdist_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_levenshtein_pairwise_falls_back_when_cdist_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _install_fake_rapidfuzz(monkeypatch, lev_value=7.0, include_process=False)
     seqs = ["a", "bb", "ccc"]
     D = dr.levenshtein_distance.pairwise(seqs)  # type: ignore[attr-defined]
@@ -93,12 +102,16 @@ def test_levenshtein_pairwise_falls_back_when_cdist_missing(monkeypatch: pytest.
     assert np.all(D[np.triu_indices(3, 1)] == 7.0)
 
 
-def test_damerau_levenshtein_distance_uses_rapidfuzz_when_available(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_damerau_levenshtein_distance_uses_rapidfuzz_when_available(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _install_fake_rapidfuzz(monkeypatch, dam_value=1.0)
     assert dr.damerau_levenshtein_distance("ab", "ba") == 1.0
 
 
-def test_damerau_levenshtein_distance_falls_back_when_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_damerau_levenshtein_distance_falls_back_when_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _force_rapidfuzz_unavailable(monkeypatch)
     # Without Damerau transpositions, Levenshtein("ab","ba") == 2.
     assert dr.damerau_levenshtein_distance("ab", "ba") == 2.0
@@ -112,13 +125,17 @@ def test_jensen_shannon_kgram_distance_smoke() -> None:
 
 
 def test_get_distance_registry_includes_js_kgram_keys() -> None:
-    reg = dr.get_distance_registry(rho_values=(), k_values=(), include_optional=True, js_k_values=(3,))
+    reg = dr.get_distance_registry(
+        rho_values=(), k_values=(), include_optional=True, js_k_values=(3,)
+    )
     assert "js_kgram_k=3" in reg
     assert isinstance(reg["js_kgram_k=3"]("banana", "bandana"), float)
+
 
 def test_kgram_counts_raises_for_negative_k() -> None:
     with pytest.raises(ValueError, match="k must be positive"):
         dr._kgram_counts("banana", -1)
+
 
 def test_kgram_angle_distance_is_registered() -> None:
     reg = dr.get_distance_registry(rho_values=(), k_values=(2,), include_optional=False)
@@ -127,6 +144,8 @@ def test_kgram_angle_distance_is_registered() -> None:
 
 
 def test_weighted_angle_distance_is_registered() -> None:
-    reg = dr.get_distance_registry(rho_values=(0.5,), k_values=(), include_optional=False)
+    reg = dr.get_distance_registry(
+        rho_values=(0.5,), k_values=(), include_optional=False
+    )
     assert "weighted_angle_rho=0.5" in reg
     assert reg["weighted_angle_rho=0.5"]("abc", "abc") == 0.0

@@ -23,6 +23,7 @@ from src.data.synthetic_tandem_repeats import (
 # faulthandler.enable()
 # faulthandler.dump_traceback_later(30, repeat=True)
 
+
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 

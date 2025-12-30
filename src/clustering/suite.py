@@ -69,7 +69,7 @@ def run_dbscan_suite(
     distances: Sequence[DistanceSpec],
     *,
     dbscan: DbscanConfig = DbscanConfig(),
-    max_rows: int | None = 500,
+    max_rows: int | None = 200,
     seed: int = 0,
     out_dir: str | Path | None = "outputs/dbscan_suite",
     make_plots: bool = True,

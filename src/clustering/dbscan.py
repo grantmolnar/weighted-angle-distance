@@ -19,7 +19,9 @@ def pairwise_distance_matrix(sequences, dist):
     if callable(pairwise):
         D = np.asarray(pairwise(sequences), dtype=float)
         if D.shape != (n, n):
-            raise ValueError(f"dist.pairwise returned shape {D.shape}, expected {(n, n)}")
+            raise ValueError(
+                f"dist.pairwise returned shape {D.shape}, expected {(n, n)}"
+            )
         # Ensure exact zeros on diagonal (some implementations may not guarantee it)
         np.fill_diagonal(D, 0.0)
         return D
@@ -35,8 +37,6 @@ def pairwise_distance_matrix(sequences, dist):
             D[i, j] = d
             D[j, i] = d
     return D
-
-
 
 
 def run_dbscan_precomputed(
