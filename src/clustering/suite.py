@@ -10,6 +10,11 @@ import time
 import numpy as np
 import polars as pl
 
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+_ET = ZoneInfo("America/New_York")
+
 from src.clustering.dbscan import (
     DbscanResult,
     pairwise_distance_matrix,
@@ -64,6 +69,11 @@ class DbscanConfig:
     eps_quantiles: tuple[float, float] = (0.02, 0.20)
 
 
+def now_et_str() -> str:
+    # Example: 2025-12-30 21:17:03 ET
+    return datetime.now(_ET).strftime("%Y-%m-%d %H:%M:%S ET")
+
+
 def run_dbscan_suite(
     importers: Sequence[DataImporter],
     distances: Sequence[DistanceSpec],
@@ -83,7 +93,6 @@ def run_dbscan_suite(
     Notes
     -----
     This is O(N^2) per distance due to the full pairwise distance matrix.
-    Start small (e.g. max_rows=200..800) until you optimize distance computation.
     """
     out_path = Path(out_dir) if out_dir is not None else None
     if out_path is not None:
@@ -91,8 +100,13 @@ def run_dbscan_suite(
 
     rows: list[dict[str, object]] = []
 
+    total = len(importers) * len(distances)
+    done = 0
+
     for importer in importers:
         df = importer.load()
+
+        dataset_name = importer.name
 
         # Optional subsample for speed / sanity.
         if max_rows is not None and df.height > max_rows:
@@ -108,6 +122,20 @@ def run_dbscan_suite(
         true_labels = df["label"].to_list()
 
         for dist in distances:
+            done += 1
+            distance_name = dist.name
+
+            left = total - done
+
+            pairwise_builder = getattr(dist.fn, "pairwise", None)
+            is_fast = callable(pairwise_builder)
+
+            print(
+                f"\n[{now_et_str()}] [DBSCAN] ({done}/{total}) dataset={dataset_name} distance={distance_name} "
+                f"n={len(sequences)} pairwise={'FAST' if is_fast else 'SLOW'}",
+                flush=True,
+            )
+
             t0 = time.perf_counter()
             D = pairwise_distance_matrix(sequences, dist.fn)
             t_dist = time.perf_counter() - t0

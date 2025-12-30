@@ -10,7 +10,7 @@ from src.experiments.dbscan_defaults import DATA_IMPORTERS, DISTANCES
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out-dir", type=Path, default=Path("outputs/dbscan_suite"))
-    ap.add_argument("--max-rows", type=int, default=500)
+    ap.add_argument("--max-rows", type=int, default=200)
     ap.add_argument("--seed", type=int, default=0)
 
     ap.add_argument("--no-tune", action="store_true")
