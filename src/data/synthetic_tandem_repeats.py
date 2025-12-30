@@ -60,35 +60,6 @@ class SyntheticTandemRepeatConfig:
     # Label formatting
     label_sep: str  # how motif-tuples are rendered into a single string label
 
-
-DEFAULT_SYNTHETIC_TR_CONFIG = SyntheticTandemRepeatConfig(
-    # Requested: 10,000 samples from 10 classes (balanced generation)
-    n_samples=10_000,
-    n_classes=10,
-    motifs_per_label_min=1,
-    motifs_per_label_max=6,
-    # Requested: motifs of length 1..8 over DNA alphabet
-    alphabet="ACGT",
-    motif_len_min=1,
-    motif_len_max=6,
-    # Requested: separators and prefixes/suffixes of length 0..8
-    flank_len_min=0,
-    flank_len_max=0,
-    sep_len_min=0,
-    sep_len_max=2,
-    # Choose a single “budget” so expected length is stable across classes.
-    # Must be large enough that even (k=6, motif_len=8) can have mean repeats >= 1.
-    target_expected_total_length=500.0,
-    # If True, we are obliged to keep our strings close to the same length
-    coerce_equal_length=False,
-    # Keeps very short motifs from occasionally producing very long strings
-    repeat_cap=10_000,
-    # Default: no point mutation (easy to turn on later)
-    mutation_rate_non_motif=0.01,
-    label_sep="|",
-)
-
-
 def _rand_int_inclusive(rng: np.random.Generator, lo: int, hi: int) -> int:
     """Uniform integer in [lo, hi]."""
     if hi < lo:
@@ -351,7 +322,7 @@ def generate_synthetic_tandem_repeat_df(
 
 def ensure_synthetic_tandem_repeat_dataset(
     out_path: str | Path,
-    cfg: SyntheticTandemRepeatConfig = DEFAULT_SYNTHETIC_TR_CONFIG,
+    cfg: SyntheticTandemRepeatConfig,
     *,
     seed_labels: int = 0,
     seed_samples: int = 1,

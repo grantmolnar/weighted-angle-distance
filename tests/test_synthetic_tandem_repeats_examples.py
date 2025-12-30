@@ -300,6 +300,7 @@ def _df_equal(a: pl.DataFrame, b: pl.DataFrame) -> bool:
 def test_ensure_dataset_reads_if_exists_and_generates_if_missing(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    cfg = _base_cfg()
     out = tmp_path / "synthetic.parquet"
 
     # --- read-existing path
@@ -312,7 +313,7 @@ def test_ensure_dataset_reads_if_exists_and_generates_if_missing(
 
     monkeypatch.setattr(tr.pl, "read_parquet", fake_read_parquet, raising=True)
 
-    got = tr.ensure_synthetic_tandem_repeat_dataset(out)
+    got = tr.ensure_synthetic_tandem_repeat_dataset(out, cfg)
     assert _df_equal(got, expected)
 
     # --- generate-and-write path
@@ -323,6 +324,7 @@ def test_ensure_dataset_reads_if_exists_and_generates_if_missing(
     def fake_generate(
         cfg: tr.SyntheticTandemRepeatConfig, *, seed_labels: int, seed_samples: int
     ) -> pl.DataFrame:
+        assert cfg == _base_cfg()
         assert seed_labels == 11
         assert seed_samples == 22
         return generated
@@ -336,7 +338,7 @@ def test_ensure_dataset_reads_if_exists_and_generates_if_missing(
     monkeypatch.setattr(pl.DataFrame, "write_parquet", fake_write_parquet, raising=True)
 
     got2 = tr.ensure_synthetic_tandem_repeat_dataset(
-        out2, seed_labels=11, seed_samples=22
+        out2, cfg, seed_labels=11, seed_samples=22
     )
     assert _df_equal(got2, generated)
     assert out2.exists()

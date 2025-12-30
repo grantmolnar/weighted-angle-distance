@@ -15,9 +15,10 @@ from src.data.ucsc_trf_loader import load_ucsc_trf_to_polars
 from src.string_distances.distance_registry import get_distance_registry
 
 from src.data.synthetic_tandem_repeats import (
-    DEFAULT_SYNTHETIC_TR_CONFIG,
+    SyntheticTandemRepeatConfig,
     ensure_synthetic_tandem_repeat_dataset,
 )
+
 
 # import faulthandler
 # faulthandler.enable()
@@ -29,17 +30,35 @@ def repo_root() -> Path:
 
 
 SYNTH_TR_PATH = processed_dir() / "synthetic_tandem_repeats.parquet"
-SPLICE_PATH = (
-    processed_dir() / "splice" / "splice.data"
-)  # raw_dir() / "splice" / "splice.data"
+SPLICE_PATH = processed_dir() / "splice.data"  # raw_dir() / "splice.data"
 STRSEQ_PATH = processed_dir() / "strseq_alleles.parquet"
 UCSC_TRF_PATH = processed_dir() / "ucsc_trf_hg19.parquet"
+
+DBSCAN_SYNTH_TR_CONFIG = SyntheticTandemRepeatConfig(
+    n_samples=10_000,
+    n_classes=10,
+    motifs_per_label_min=2,
+    motifs_per_label_max=8,
+    alphabet="ACGT",
+    motif_len_min=1,
+    motif_len_max=10,
+    flank_len_min=0,
+    flank_len_max=2,
+    sep_len_min=0,
+    sep_len_max=2,
+    # Key change: keep lengths controlled
+    target_expected_total_length=350.0,
+    coerce_equal_length=True,
+    repeat_cap=500,  # keeps tails bounded
+    mutation_rate_non_motif=0.01,
+    label_sep="|",
+)
 
 
 def load_synth_tr() -> pl.DataFrame:
     return ensure_synthetic_tandem_repeat_dataset(
         SYNTH_TR_PATH,
-        DEFAULT_SYNTHETIC_TR_CONFIG,
+        DBSCAN_SYNTH_TR_CONFIG,
         seed_labels=42,
         seed_samples=1,
     )
@@ -77,9 +96,9 @@ def load_ucsc_trf() -> pl.DataFrame:
 
 DATA_IMPORTERS: list[DataImporter] = [
     DataImporter(name="synthetic_tr", load=load_synth_tr),
-    DataImporter(name="splice", load=load_splice),
-    DataImporter(name="strseq", load=load_strseq),
-    DataImporter(name="ucsc_trf", load=load_ucsc_trf),
+#     DataImporter(name="splice", load=load_splice),
+#     DataImporter(name="strseq", load=load_strseq),
+#     DataImporter(name="ucsc_trf", load=load_ucsc_trf),
 ]
 
 

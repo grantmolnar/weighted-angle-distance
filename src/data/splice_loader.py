@@ -39,4 +39,4 @@ def load_splice_to_polars(path: Union[str, Path]) -> pl.DataFrame:
             rows.append((label.strip(), sample_id.strip(), seq.strip()))
 
     # Construct the Polars DataFrame with an explicit schema (stable column order/types).
-    return pl.DataFrame(rows, schema=["label", "sample_id", "sequence"])
+    return pl.DataFrame(rows, schema=["label", "sample_id", "sequence"], orient="row")
