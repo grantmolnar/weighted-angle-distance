@@ -70,21 +70,21 @@ DEFAULT_SYNTHETIC_TR_CONFIG = SyntheticTandemRepeatConfig(
     # Requested: motifs of length 1..8 over DNA alphabet
     alphabet="ACGT",
     motif_len_min=1,
-    motif_len_max=8,
+    motif_len_max=6,
     # Requested: separators and prefixes/suffixes of length 0..8
     flank_len_min=0,
-    flank_len_max=8,
+    flank_len_max=0,
     sep_len_min=0,
-    sep_len_max=0,
+    sep_len_max=2,
     # Choose a single “budget” so expected length is stable across classes.
     # Must be large enough that even (k=6, motif_len=8) can have mean repeats >= 1.
-    target_expected_total_length=100.0,
+    target_expected_total_length=500.0,
     # If True, we are obliged to keep our strings close to the same length
     coerce_equal_length=False,
     # Keeps very short motifs from occasionally producing very long strings
-    repeat_cap=120,
+    repeat_cap=10_000,
     # Default: no point mutation (easy to turn on later)
-    mutation_rate_non_motif=0.0,
+    mutation_rate_non_motif=0.01,
     label_sep="|",
 )
 

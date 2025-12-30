@@ -5,7 +5,7 @@ standard string distances (e.g. Levenshtein, Jaro–Winkler, LCS, k-gram variant
 clustering tasks such as **DBSCAN** on sequence data.
 
 The repo includes:
-- A small clustering “suite” that runs importer × distance experiments and writes results + plots.
+- A small clustering "suite" that runs importer × distance experiments and writes results + plots.
 - Synthetic tandem-repeat data generation (useful for “stutter”-heavy sequences).
 - Download/loader utilities for real STRSeq-style datasets.
 
