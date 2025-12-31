@@ -35,7 +35,7 @@ dbscan_string_experiments.csv
 .hypothesis
 sandbox*
 splice.parquet
-outputs/
+outputs*/
 mutants/
 
 data/

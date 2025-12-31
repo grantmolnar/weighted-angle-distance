@@ -37,13 +37,13 @@ UCSC_TRF_PATH = processed_dir() / "ucsc_trf_hg19.parquet"
 DBSCAN_SYNTH_TR_CONFIG = SyntheticTandemRepeatConfig(
     n_samples=10_000,
     n_classes=10,
-    motifs_per_label_min=2,
-    motifs_per_label_max=8,
+    motifs_per_label_min=1,
+    motifs_per_label_max=5,
     alphabet="ACGT",
     motif_len_min=1,
     motif_len_max=10,
     flank_len_min=0,
-    flank_len_max=2,
+    flank_len_max=0,
     sep_len_min=0,
     sep_len_max=2,
     # Key change: keep lengths controlled
@@ -96,9 +96,9 @@ def load_ucsc_trf() -> pl.DataFrame:
 
 DATA_IMPORTERS: list[DataImporter] = [
     DataImporter(name="synthetic_tr", load=load_synth_tr),
-#     DataImporter(name="splice", load=load_splice),
-#     DataImporter(name="strseq", load=load_strseq),
-#     DataImporter(name="ucsc_trf", load=load_ucsc_trf),
+    DataImporter(name="splice", load=load_splice),
+    DataImporter(name="strseq", load=load_strseq),
+    DataImporter(name="ucsc_trf", load=load_ucsc_trf),
 ]
 
 

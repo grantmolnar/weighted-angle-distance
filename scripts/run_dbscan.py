@@ -17,7 +17,7 @@ def main() -> None:
     ap.add_argument("--min-samples", type=int, default=5)
     ap.add_argument("--trials", type=int, default=100)
 
-    ap.add_argument("--no-plots", action="store_true")
+    # ap.add_argument("--no-plots", action="store_true")
     ap.add_argument("--plot-max-n", type=int, default=600)
     ap.add_argument("--max-rows", type=int, default=0, help="Max rows per dataset. Use 0 to use the full dataset.")
 
@@ -39,7 +39,7 @@ def main() -> None:
         max_rows=max_rows,
         seed=args.seed,
         out_dir=args.out_dir,
-        make_plots=not args.no_plots,
+        # make_plots=not args.no_plots,
         plot_max_n=args.plot_max_n,
     )
 
