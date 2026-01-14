@@ -104,7 +104,7 @@ DATA_IMPORTERS: list[DataImporter] = [
 
 # Build the full registry once, then pick a subset by name.
 r = 1 / 10
-_RHOS: list[float] = [r * i for i in range(1, int(1 / r) + 1)]
+_RHOS: list[float] = [r * i for i in range(1, int(1 / r))]
 _KS: list[int] = list(range(3, 7))
 
 _REG = get_distance_registry(

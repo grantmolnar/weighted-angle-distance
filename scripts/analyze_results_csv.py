@@ -68,8 +68,9 @@ def plot_best_of_family(df: pd.DataFrame, metric: str, out_dir: Path) -> None:
 
 def plot_param_sweeps(df: pd.DataFrame, metric: str, out_dir: Path) -> None:
     # weighted_angle sweeps (rho)
+    # NOTE: ARI+NMI are plotted together against rho by `plot_weighted_angle_ari_nmi_vs_rho`.
     wa = df[df["family"] == "weighted_angle"].copy()
-    if not wa.empty:
+    if not wa.empty and metric not in {"ari", "nmi"}:
         for ds, sub in wa.groupby("dataset"):
             sub = sub.sort_values("param")
             fig = plt.figure()
@@ -110,6 +111,56 @@ def plot_param_sweeps(df: pd.DataFrame, metric: str, out_dir: Path) -> None:
             ax.set_ylabel(metric)
             fig.tight_layout()
             fig.savefig(out_dir / f"{ds}__{metric}__vs_k_js_kgram.png", dpi=200)
+            plt.close(fig)
+
+
+def plot_weighted_angle_ari_nmi_vs_rho(df: pd.DataFrame, out_dir: Path) -> None:
+    """Single plot: ARI and NMI vs rho for the weighted-angle distance."""
+    if not {"ari", "nmi"} <= set(df.columns):
+        return
+    wa = df[df["family"] == "weighted_angle"].copy()
+    if wa.empty:
+        return
+
+    for ds, sub in wa.groupby("dataset"):
+        sub = sub.sort_values("param")
+        x = sub["param"].astype(float)
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.plot(x, sub["ari"].astype(float), marker="o", label="ARI")
+        ax.plot(x, sub["nmi"].astype(float), marker="o", label="NMI")
+        ax.set_title(f"{ds}: ARI and NMI vs rho (weighted angle)")
+        ax.set_xlabel("rho")
+        ax.set_ylabel("score")
+        ax.legend()
+        fig.tight_layout()
+        fig.savefig(out_dir / f"{ds}__weighted_angle__ari_nmi__vs_rho.png", dpi=200)
+        plt.close(fig)
+
+
+def plot_silhouette_vs_ari_nmi(df: pd.DataFrame, out_dir: Path) -> None:
+    """Scatter plots: silhouette vs ARI, and silhouette vs NMI (all distances)."""
+    if "silhouette" not in df.columns:
+        return
+
+    for metric in ("ari", "nmi"):
+        if metric not in df.columns:
+            continue
+
+        for ds, sub in df.groupby("dataset"):
+            sub = sub[[metric, "silhouette"]].dropna()
+            if sub.empty:
+                continue
+
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.scatter(sub[metric].astype(float), sub["silhouette"].astype(float))
+            ax.set_title(f"{ds}: silhouette vs {metric.upper()}")
+            ax.set_xlabel(metric.upper())
+            ax.set_ylabel("silhouette")
+            fig.tight_layout()
+            fig.savefig(out_dir / f"{ds}__silhouette__vs_{metric}.png", dpi=200)
             plt.close(fig)
 
 
@@ -198,6 +249,10 @@ def main() -> None:
         if metric in df.columns:
             plot_best_of_family(df, metric, out_dir)
             plot_param_sweeps(df, metric, out_dir)
+
+    # Combined / cross-metric plots
+    plot_weighted_angle_ari_nmi_vs_rho(df, out_dir)
+    plot_silhouette_vs_ari_nmi(df, out_dir)
 
     rank_consistency_table(df, out_dir)
     rho_stability_tables(df, out_dir)
