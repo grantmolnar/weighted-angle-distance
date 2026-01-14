@@ -95,7 +95,7 @@ def load_ucsc_trf() -> pl.DataFrame:
 
 
 DATA_IMPORTERS: list[DataImporter] = [
-    DataImporter(name="synthetic_tr", load=load_synth_tr),
+    # DataImporter(name="synthetic_tr", load=load_synth_tr),
     DataImporter(name="splice", load=load_splice),
     DataImporter(name="strseq", load=load_strseq),
     DataImporter(name="ucsc_trf", load=load_ucsc_trf),
@@ -105,7 +105,7 @@ DATA_IMPORTERS: list[DataImporter] = [
 # Build the full registry once, then pick a subset by name.
 r = 1 / 10
 _RHOS: list[float] = [r * i for i in range(1, int(1 / r) + 1)]
-_KS: list[int] = list(range(2, 50))
+_KS: list[int] = list(range(3, 7))
 
 _REG = get_distance_registry(
     rho_values=_RHOS,
@@ -121,8 +121,8 @@ DISTANCE_KEYS: list[str] = (
         "damerau_levenshtein",
     ]
     + [f"weighted_angle_rho={r}" for r in _RHOS]
-    + [f"js_kgram_k={k}" for k in range(3, 7)]
-    + [f"kgram_angle_k={k}" for k in range(3, 7)]
+    + [f"js_kgram_k={k}" for k in _KS]
+    + [f"kgram_angle_k={k}" for k in _KS]
 )
 
 
