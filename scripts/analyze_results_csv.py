@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from typing import cast
 
 
 DIST_RE = {
@@ -49,7 +50,7 @@ def ensure_outdir(p: Path) -> Path:
 def plot_best_of_family(df: pd.DataFrame, metric: str, out_dir: Path) -> None:
     # best score within each (dataset, family)
     best = (
-        df.groupby(["dataset", "family"], as_index=False)[metric]
+        df.groupby(["dataset", "family"], as_index=False)[[metric]]
         .max()
         .sort_values(["dataset", metric], ascending=[True, False])
     )
@@ -173,7 +174,14 @@ def rank_consistency_table(df: pd.DataFrame, out_dir: Path) -> None:
             for j in range(i + 1, len(metrics)):
                 m1, m2 = metrics[i], metrics[j]
                 corr = spearman_rank_corr(sub[m1], sub[m2])
-                rows.append({"dataset": ds, "metric_a": m1, "metric_b": m2, "spearman_rank_corr": corr})
+                rows.append(
+                    {
+                        "dataset": ds,
+                        "metric_a": m1,
+                        "metric_b": m2,
+                        "spearman_rank_corr": corr,
+                    }
+                )
     out = pd.DataFrame(rows).sort_values(["dataset", "metric_a", "metric_b"])
     out.to_csv(out_dir / "rank_consistency_across_metrics.csv", index=False)
 
@@ -193,14 +201,16 @@ def rho_stability_tables(df: pd.DataFrame, out_dir: Path) -> None:
                 continue
             best_row = sub.loc[sub[metric].astype(float).idxmax()]
             vals = sub[metric].astype(float).to_numpy()
-            rows.append({
-                "dataset": ds,
-                "metric": metric,
-                "best_rho": float(best_row["rho"]),
-                "best_value": float(best_row[metric]),
-                "std_over_rho": float(np.std(vals)),
-                "range_over_rho": float(np.max(vals) - np.min(vals)),
-            })
+            rows.append(
+                {
+                    "dataset": ds,
+                    "metric": metric,
+                    "best_rho": float(best_row["rho"]),
+                    "best_value": float(best_row[metric]),
+                    "std_over_rho": float(np.std(vals)),
+                    "range_over_rho": float(np.max(vals) - np.min(vals)),
+                }
+            )
 
     out = pd.DataFrame(rows).sort_values(["dataset", "metric"])
     out.to_csv(out_dir / "weighted_angle_rho_stability.csv", index=False)
@@ -215,14 +225,25 @@ def rho_stability_tables(df: pd.DataFrame, out_dir: Path) -> None:
         winners["rho"] = winners["param"].astype(float)
         counts = winners["rho"].value_counts().sort_index()
         for rho, c in counts.items():
-            wins.append({"metric": metric, "rho": float(rho), "n_datasets_won": int(c)})
+            wins.append(
+                {
+                    "metric": metric,
+                    "rho": float(cast(float, rho)),
+                    "n_datasets_won": int(c),
+                }
+            )
+
     if wins:
-        pd.DataFrame(wins).to_csv(out_dir / "weighted_angle_rho_win_counts.csv", index=False)
+        pd.DataFrame(wins).to_csv(
+            out_dir / "weighted_angle_rho_win_counts.csv", index=False
+        )
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--results", type=Path, default=Path("outputs/dbscan_suite/results.csv"))
+    ap.add_argument(
+        "--results", type=Path, default=Path("outputs/dbscan_suite/results.csv")
+    )
     ap.add_argument("--out-dir", type=Path, default=Path("outputs/plots_from_results"))
     args = ap.parse_args()
 

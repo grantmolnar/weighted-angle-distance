@@ -19,7 +19,12 @@ def main() -> None:
 
     ap.add_argument("--no-plots", action="store_true")
     ap.add_argument("--plot-max-n", type=int, default=600)
-    ap.add_argument("--max-rows", type=int, default=0, help="Max rows per dataset. Use 0 to use the full dataset.")
+    ap.add_argument(
+        "--max-rows",
+        type=int,
+        default=0,
+        help="Max rows per dataset. Use 0 to use the full dataset.",
+    )
 
     args = ap.parse_args()
 
