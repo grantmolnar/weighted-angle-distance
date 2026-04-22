@@ -9,6 +9,10 @@ The repo includes:
 - Synthetic tandem-repeat data generation (useful for “stutter”-heavy sequences).
 - Download/loader utilities for real STRSeq-style datasets.
 
+## Patents and licensing
+
+The techniques implemented in this repository are the subject of a pending patent application by ARKA. This code is released to accompany the paper "A weighted angle distance on strings" for academic reproducibility. See LICENSE for terms of use. For commercial licensing inquiries, contact grant.molnar@caci.com
+
 ## Environment Setup
 
 ```bash
